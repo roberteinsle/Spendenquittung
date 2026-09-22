@@ -1,75 +1,38 @@
-# ─── Stage 1: PHP dependencies ─────────────────────────────────────────────
-FROM php:8.3-fpm-alpine AS php-base
+# ─── Stage 1: Frontend-Assets (Vite) ─────────────────────────────────────────
+FROM node:22-alpine AS assets
 
-# System packages
-RUN apk add --no-cache \
-    postgresql-dev \
-    icu-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-        pdo_pgsql \
-        gd \
-        bcmath \
-        intl \
-        zip \
-        pcntl \
-        opcache
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# ─── Stage 2: Composer dependencies ──────────────────────────────────────────
+FROM composer:2 AS vendor
 
-WORKDIR /var/www/html
-
-# Install PHP dependencies (production only)
+WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
     --no-scripts \
     --no-autoloader \
     --prefer-dist \
-    --optimize-autoloader \
     --no-interaction
-
-# Copy application source
 COPY . .
-
-# Finalize composer autoloader
 RUN composer dump-autoload --optimize --no-dev
 
-# ─── Stage 2: Node / Frontend assets ────────────────────────────────────────
-FROM node:20-alpine AS node-build
+# ─── Stage 3: Runtime ─────────────────────────────────────────────────────────
+FROM serversideup/php:8.3-fpm-nginx-alpine
 
-WORKDIR /app
-COPY package.json package-lock.json vite.config.js ./
-RUN npm ci --frozen-lockfile
+ENV AUTORUN_ENABLED=true \
+    AUTORUN_LARAVEL_MIGRATION=true \
+    PHP_OPCACHE_ENABLE=1
 
-COPY . .
-RUN npm run build
+USER root
+RUN install-php-extensions intl gd zip bcmath pdo_pgsql pcntl
+USER www-data
 
-# ─── Stage 3: Nginx + PHP-FPM ───────────────────────────────────────────────
-FROM php-base AS production
+WORKDIR /var/www/html
 
-# Copy built frontend assets
-COPY --from=node-build /app/public/build /var/www/html/public/build
-
-# Copy Nginx config
-RUN apk add --no-cache nginx supervisor
-
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-COPY docker/entrypoint.sh /entrypoint.sh
-
-RUN chmod +x /entrypoint.sh \
-    && mkdir -p /var/log/supervisor \
-    && chown -R www-data:www-data storage bootstrap/cache
-
-EXPOSE 80
-
-ENTRYPOINT ["/entrypoint.sh"]
+COPY --chown=www-data:www-data --from=vendor /app /var/www/html
+COPY --chown=www-data:www-data --from=assets /app/public/build /var/www/html/public/build

@@ -2,9 +2,8 @@ services:
   app:
     build:
       context: .
-      target: production
     ports:
-      - "8080:80"
+      - "8080:8080"
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
@@ -20,9 +19,14 @@ services:
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
+      AUTORUN_ENABLED: "true"
+      AUTORUN_LARAVEL_MIGRATION: "true"
+      LOG_CHANNEL: stderr
     volumes:
-      - pdf_storage:/var/www/html/storage/app/public/pdfs
-      - asset_storage:/var/www/html/storage/app/public
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+      - storage_data:/var/www/html/storage
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,11 +51,11 @@ services:
     image: gotenberg/gotenberg:8
     command:
       - "gotenberg"
+      - "--api-timeout=60s"
       - "--chromium-disable-javascript=false"
       - "--chromium-allow-list=file:///.*"
     restart: unless-stopped
 
 volumes:
   pgdata:
-  pdf_storage:
-  asset_storage:
+  storage_data:
