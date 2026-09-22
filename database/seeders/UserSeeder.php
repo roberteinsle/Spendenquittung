@@ -12,19 +12,19 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name'     => 'Robert Einsle',
-                'email'    => 'robert@einsle.com',
-                'password' => Hash::make('change-me-on-first-login'),
+                'name'     => 'Admin',
+                'email'    => 'admin@example.com',
+                'password' => Hash::make('password'),
             ],
             [
-                'name'     => 'Jasmin Einsle',
-                'email'    => 'jasmin@dfliedelt-stiftung.de',
-                'password' => Hash::make('change-me-on-first-login'),
+                'name'     => 'User 1',
+                'email'    => 'user1@example.com',
+                'password' => Hash::make('password'),
             ],
             [
-                'name'     => 'Andrea Janßen',
-                'email'    => 'andrea@dfliedelt-stiftung.de',
-                'password' => Hash::make('change-me-on-first-login'),
+                'name'     => 'User 2',
+                'email'    => 'user2@example.com',
+                'password' => Hash::make('password'),
             ],
         ];
 

@@ -72,8 +72,8 @@ php artisan serve
 Die App ist dann unter `http://localhost:8000` erreichbar.
 
 **Standard-Login nach dem Seeding:**
-- andrea@example.com / password
-- jasmin@example.com / password
+- user1@example.com / password
+- user2@example.com / password
 - admin@example.com / password
 
 > Passwörter unbedingt vor dem ersten produktiven Einsatz ändern.
