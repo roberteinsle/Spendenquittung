@@ -23,7 +23,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
 # ─── Stage 3: Runtime ─────────────────────────────────────────────────────────
-FROM serversideup/php:8.3-fpm-nginx-alpine
+FROM serversideup/php:8.4-fpm-nginx-alpine
 
 ENV AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION=true \
