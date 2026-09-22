@@ -1,58 +1,174 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Zuwendungsbestätigung
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Eine Webanwendung für gemeinnützige Organisationen zur digitalen Erstellung von steuerlich anerkannten Zuwendungsbestätigungen (Spendenquittungen) nach deutschem Recht.
 
-## About Laravel
+Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stiftungen, Vereine und gemeinnützige Organisationen nutzbar.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Was kann die App?
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Spenderdaten verwalten** – Stammdaten mit automatischer Spendernummer, Anrede, Adresse, E-Mail
+- **Spenden erfassen** – Betrag, Datum, Förderungszweck, Ankreuzfeld (Vermögensstock / unmittelbare Verwendung)
+- **Farbiges PDF erzeugen** – A4-Zuwendungsbestätigung mit Logo, Unterschrift und individuellem Förderungstext, konform zum BMF-Muster
+- **Excel-Import** – Spenderliste aus Excel importieren, bestehende Spender automatisch erkennen (Fuzzy-Matching)
+- **Bescheinigungsnummern** – werden automatisch vergeben (Format `YYxxxx`, z.B. `264711`)
+- **Betrag in Worten** – wird automatisch auf Deutsch ausgeschrieben
+- **Mehrere Förderungszwecke** – konfigurierbar mit vollem juristischen Text je Zweck
+- **Versandprotokoll** – Druck, E-Mail und Postversand werden protokolliert
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech-Stack
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Komponente | Technologie |
+|---|---|
+| Framework | Laravel 13 (PHP 8.3) |
+| Admin-Oberfläche | Filament 4 |
+| Datenbank | PostgreSQL |
+| PDF-Erzeugung | Gotenberg 8 (Chromium-basiert) |
+| Excel-Import | maatwebsite/excel |
+| Containerisierung | Docker (serversideup/php) |
+| CI/CD | GitHub Actions → GHCR |
+| Betrieb | Coolify (selbst gehostet) |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Voraussetzungen
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- Docker und Docker Compose
+- Ein GitHub-Account (für das Image-Registry)
+- Eine Coolify-Instanz **oder** ein beliebiger Server mit Docker
+
+Für die lokale Entwicklung genügt **PHP 8.3**, **Composer**, **Node.js 22** und **SQLite**.
+
+---
+
+## Lokale Entwicklung
 
 ```bash
-composer require laravel/boost --dev
+# Repository klonen
+git clone https://github.com/roberteinsle/Spendenquittung.git
+cd Spendenquittung
 
-php artisan boost:install
+# Abhängigkeiten installieren
+composer install
+npm install
+
+# Umgebung einrichten
+cp .env.example .env
+php artisan key:generate
+
+# Datenbank anlegen und befüllen (SQLite, keine Installation nötig)
+php artisan migrate --seed
+
+# Assets bauen
+npm run build
+
+# Entwicklungsserver starten
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Die App ist dann unter `http://localhost:8000` erreichbar.
 
-## Contributing
+**Standard-Login nach dem Seeding:**
+- andrea@example.com / password
+- jasmin@example.com / password
+- admin@example.com / password
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> Passwörter unbedingt vor dem ersten produktiven Einsatz ändern.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Deployment mit Docker (Coolify)
 
-## Security Vulnerabilities
+### 1. Image bauen und pushen (GitHub Actions)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Das mitgelieferte Workflow-File [.github/workflows/build.yml](.github/workflows/build.yml) baut bei jedem Push auf `main` automatisch ein Docker-Image und legt es in der GitHub Container Registry (GHCR) ab.
 
-## License
+Das Image wird unter `ghcr.io/DEIN-GITHUB-USERNAME/spendenquittung:latest` veröffentlicht.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Damit Coolify das Image ziehen kann, muss es **öffentlich** sein:
+> GitHub → Packages → spendenquittung → Package settings → Change visibility → Public
+
+Alternativ kann Coolify mit einem GitHub PAT (`read:packages`) als private Registry konfiguriert werden.
+
+### 2. Coolify einrichten
+
+1. In Coolify: **New Resource → Docker Compose (Empty)**
+2. Inhalt von [deploy/docker-compose.coolify.yml](deploy/docker-compose.coolify.yml) einfügen
+3. Folgende Umgebungsvariablen in Coolify setzen:
+
+| Variable | Beschreibung |
+|---|---|
+| `APP_KEY` | `php artisan key:generate --show` |
+| `APP_URL` | URL der App, z.B. `https://quittungen.meinverein.de` |
+| `DB_DATABASE` | Datenbankname |
+| `DB_USERNAME` | Datenbankbenutzer |
+| `DB_PASSWORD` | Sicheres Passwort |
+| `APP_TAG` | Image-Tag, Standard: `latest` |
+
+4. Deployment starten
+
+Beim ersten Start werden Datenbankmigrationen und das Seeding automatisch ausgeführt.
+
+---
+
+## Anpassung an die eigene Organisation
+
+### Stiftungs-/Vereinsdaten
+
+Nach dem ersten Login unter **Einstellungen** hinterlegen:
+
+- Name der Organisation
+- Adresse
+- Bankverbindung (IBAN, BIC, Geldinstitut)
+- Freistellungsbescheid-Daten (Finanzamt, Steuernummer, Datum, Veranlagungszeitraum)
+- Rechtsform (öffentlich-rechtlich / privatrechtlich)
+
+### Logo und Unterschrift
+
+Ebenfalls unter **Einstellungen**:
+
+- **Logo** – PNG oder JPG, mind. 300 dpi bei Zielgröße
+- **Unterschrift** – PNG mit transparentem Hintergrund empfohlen
+- Optional: Herzfigur / Signet (je nach Gestaltung der Vorlage)
+
+### Förderungszwecke
+
+Unter **Förderungszwecke** können beliebig viele Zwecke mit dem vollständigen juristischen Text angelegt werden. Je Spende wird der passende Zweck ausgewählt und erscheint im PDF.
+
+### PDF-Vorlage anpassen
+
+Die Vorlage liegt unter [resources/views/pdf/zuwendungsbestaetigung.blade.php](resources/views/pdf/zuwendungsbestaetigung.blade.php). Sie ist ein normales HTML/CSS-Dokument und kann frei gestaltet werden. Gotenberg rendert es über Chromium zu einem druckfähigen A4-PDF.
+
+---
+
+## Sicherheitshinweise
+
+- Die App ist für den **internen Betrieb** ausgelegt und sollte nicht öffentlich erreichbar sein.
+- Empfohlen wird der Betrieb hinter **Tailscale** (VPN) oder einem anderen privaten Netzwerk.
+- Die mitgelieferte `TailscaleOnly`-Middleware blockiert alle Anfragen von außerhalb des Tailscale-Netzwerks, wenn `TAILSCALE_ONLY=true` gesetzt ist.
+- Credentials gehören **niemals ins Repository** – ausschließlich über Umgebungsvariablen konfigurieren.
+- Regelmäßige Backups der Datenbank und des Storage-Volumes sind Pflicht.
+
+---
+
+## Datenschutz (DSGVO)
+
+- Kein Tracking, keine externen Dienste außer dem konfigurierten SMTP-Server
+- PDF-Erzeugung läuft vollständig lokal (Gotenberg)
+- Alle Spenderdaten verbleiben auf dem eigenen Server
+- Hosting sollte in Deutschland oder der EU erfolgen
+
+---
+
+## Lizenz
+
+MIT – kostenlos nutzbar, auch für kommerzielle Organisationen.
+
+---
+
+## Mitwirken
+
+Pull Requests und Issues sind willkommen. Bitte beachte beim Melden von Sicherheitsproblemen, keine sensiblen Daten in Issues zu veröffentlichen.
