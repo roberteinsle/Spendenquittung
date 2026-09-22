@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Spende extends Model
 {
@@ -65,5 +66,19 @@ class Spende extends Model
     public function getBetragFormatiertAttribute(): string
     {
         return number_format((float) $this->betrag, 2, ',', '.') . ' €';
+    }
+
+    /**
+     * True when a generated PDF is actually present on the storage disk.
+     */
+    public function pdfVorhanden(): bool
+    {
+        return $this->pdf_pfad !== null
+            && Storage::disk(config('spendenquittung.pdf_disk'))->exists($this->pdf_pfad);
+    }
+
+    public function getPdfDateinameAttribute(): string
+    {
+        return "Zuwendungsbestaetigung-{$this->bescheinigungsnummer}.pdf";
     }
 }

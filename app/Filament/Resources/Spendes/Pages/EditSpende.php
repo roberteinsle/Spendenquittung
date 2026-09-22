@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Spendes\Pages;
 
+use App\Filament\Actions\BescheinigungActions;
 use App\Filament\Resources\Spendes\SpendeResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -15,6 +16,8 @@ class EditSpende extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            BescheinigungActions::pdfErzeugen(),
+            BescheinigungActions::pdfOeffnen(),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),

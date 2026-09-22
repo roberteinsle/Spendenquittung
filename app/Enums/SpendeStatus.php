@@ -22,6 +22,20 @@ enum SpendeStatus: string implements HasLabel, HasColor
         };
     }
 
+    /**
+     * Position in the workflow. Used to prevent a status from moving backwards,
+     * e.g. when a PDF is regenerated for a receipt that was already sent.
+     */
+    public function stufe(): int
+    {
+        return match($this) {
+            self::Erfasst   => 0,
+            self::Erstellt  => 1,
+            self::Gedruckt  => 2,
+            self::Versendet => 3,
+        };
+    }
+
     public function getColor(): string|array|null
     {
         return match($this) {

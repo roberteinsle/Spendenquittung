@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\VersandErgebnis;
 use App\Enums\VersandKanal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,7 @@ class Versandprotokoll extends Model
 
     protected $casts = [
         'kanal'     => VersandKanal::class,
+        'ergebnis'  => VersandErgebnis::class,
         'zeitpunkt' => 'datetime',
     ];
 

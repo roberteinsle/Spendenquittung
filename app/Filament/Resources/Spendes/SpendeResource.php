@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Spendes;
 use App\Filament\Resources\Spendes\Pages\CreateSpende;
 use App\Filament\Resources\Spendes\Pages\EditSpende;
 use App\Filament\Resources\Spendes\Pages\ListSpendes;
+use App\Filament\Resources\Spendes\RelationManagers\VersandprotokolleRelationManager;
 use App\Filament\Resources\Spendes\Schemas\SpendeForm;
 use App\Filament\Resources\Spendes\Tables\SpendesTable;
 use App\Models\Spende;
@@ -43,7 +44,7 @@ class SpendeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            VersandprotokolleRelationManager::class,
         ];
     }
 

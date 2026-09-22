@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\SpendeStatus;
 use App\Models\Spende;
 use App\Services\BescheinigungsnummerService;
 use App\Services\BetragInWortenService;
@@ -24,6 +25,16 @@ class SpendeObserver
 
         if (empty($spende->ausstellungsdatum)) {
             $spende->ausstellungsdatum = now()->toDateString();
+        }
+
+        if (empty($spende->erstellt_von)) {
+            $spende->erstellt_von = auth()->id();
+        }
+
+        // The column has a DB default, but that is not reflected on the
+        // in-memory model, so set it explicitly.
+        if (empty($spende->status)) {
+            $spende->status = SpendeStatus::Erfasst;
         }
     }
 }

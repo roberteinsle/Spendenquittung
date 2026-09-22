@@ -25,7 +25,7 @@ class FoerderungszweckForm
                     ->rows(3)
                     ->helperText('Wird auf der Bescheinigung gedruckt: "der Förderung ..."'),
 
-                \Filament\Forms\Components\Grid::make(2)
+                \Filament\Schemas\Components\Grid::make(2)
                     ->schema([
                         Toggle::make('aktiv')
                             ->label('Aktiv')

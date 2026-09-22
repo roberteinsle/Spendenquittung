@@ -15,7 +15,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - **Bescheinigungsnummern** – werden automatisch vergeben (Format `YYxxxx`, z.B. `264711`)
 - **Betrag in Worten** – wird automatisch auf Deutsch ausgeschrieben
 - **Mehrere Förderungszwecke** – konfigurierbar mit vollem juristischen Text je Zweck
-- **Versandprotokoll** – Druck, E-Mail und Postversand werden protokolliert
+- **Versandprotokoll** – jeder Zugriff auf ein PDF wird mit Benutzer und Zeitpunkt protokolliert
 
 ---
 
@@ -40,7 +40,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - Ein GitHub-Account (für das Image-Registry)
 - Eine Coolify-Instanz **oder** ein beliebiger Server mit Docker
 
-Für die lokale Entwicklung genügt **PHP 8.3**, **Composer**, **Node.js 22** und **SQLite**.
+Für die lokale Entwicklung genügt **PHP 8.3** (mit den Erweiterungen `intl`, `gd` und `zip`), **Composer**, **Node.js 22** und **SQLite**.
 
 ---
 
@@ -138,6 +138,17 @@ Ebenfalls unter **Einstellungen**:
 
 Unter **Förderungszwecke** können beliebig viele Zwecke mit dem vollständigen juristischen Text angelegt werden. Je Spende wird der passende Zweck ausgewählt und erscheint im PDF.
 
+### Bescheinigungen erzeugen und ausgeben
+
+Unter **Bescheinigungen** stehen je Eintrag zwei Aktionen bereit:
+
+- **PDF erzeugen** – rendert die Bescheinigung über Gotenberg und legt sie ab. Über die Mehrfachauswahl lassen sich auch ganze Stapel auf einmal erzeugen.
+- **PDF öffnen** – liefert das fertige PDF im Browser aus.
+
+Der Status einer Bescheinigung wandert dabei von *Erfasst* über *PDF erstellt* zu *Gedruckt*; ein erneutes Erzeugen setzt einen bereits erreichten Status nie zurück. Jeder Abruf eines PDFs landet im **Versandprotokoll** unterhalb des Bearbeiten-Formulars.
+
+Die erzeugten PDFs enthalten personenbezogene Daten und liegen deshalb auf einer **privaten** Storage-Disk (`storage/app/private/bescheinigungen`). Sie sind ausschließlich über die angemeldete Route `/bescheinigungen/{id}/pdf` erreichbar, nie über einen öffentlichen Link. Die Disk lässt sich per `PDF_DISK` umstellen.
+
 ### PDF-Vorlage anpassen
 
 Die Vorlage liegt unter [resources/views/pdf/zuwendungsbestaetigung.blade.php](resources/views/pdf/zuwendungsbestaetigung.blade.php). Sie ist ein normales HTML/CSS-Dokument und kann frei gestaltet werden. Gotenberg rendert es über Chromium zu einem druckfähigen A4-PDF.
@@ -148,7 +159,8 @@ Die Vorlage liegt unter [resources/views/pdf/zuwendungsbestaetigung.blade.php](r
 
 - Die App ist für den **internen Betrieb** ausgelegt und sollte nicht öffentlich erreichbar sein.
 - Empfohlen wird der Betrieb hinter **Tailscale** (VPN) oder einem anderen privaten Netzwerk.
-- Die mitgelieferte `TailscaleOnly`-Middleware blockiert alle Anfragen von außerhalb des Tailscale-Netzwerks, wenn `TAILSCALE_ONLY=true` gesetzt ist.
+- Die mitgelieferte `TailscaleOnly`-Middleware blockiert alle Anfragen von außerhalb des Tailscale-Netzwerks, wenn `TAILSCALE_ONLY=true` gesetzt ist. Sie ist sowohl im `web`-Stack als auch im Filament-Panel registriert.
+- Jeder angelegte Benutzer hat vollen Zugriff auf das Panel – es gibt keine Selbstregistrierung, Konten legt ausschließlich ein Administrator an.
 - Credentials gehören **niemals ins Repository** – ausschließlich über Umgebungsvariablen konfigurieren.
 - Regelmäßige Backups der Datenbank und des Storage-Volumes sind Pflicht.
 

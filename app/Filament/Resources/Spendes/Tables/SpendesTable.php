@@ -3,17 +3,19 @@
 namespace App\Filament\Resources\Spendes\Tables;
 
 use App\Enums\SpendeStatus;
-use Filament\Actions\Action;
+use App\Filament\Actions\BescheinigungActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 class SpendesTable
 {
@@ -53,6 +55,11 @@ class SpendesTable
                     ->badge()
                     ->sortable(),
 
+                IconColumn::make('pdf_pfad')
+                    ->label('PDF')
+                    ->boolean()
+                    ->alignCenter(),
+
                 TextColumn::make('ausstellungsdatum')
                     ->label('Ausgestellt')
                     ->date('d.m.Y')
@@ -69,20 +76,22 @@ class SpendesTable
                 SelectFilter::make('foerderungszweck_id')
                     ->label('Förderungszweck')
                     ->relationship('foerderungszweck', 'name'),
+                TernaryFilter::make('pdf_pfad')
+                    ->label('PDF vorhanden')
+                    ->nullable()
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('pdf_pfad'),
+                        false: fn (Builder $query) => $query->whereNull('pdf_pfad'),
+                        blank: fn (Builder $query) => $query,
+                    ),
             ])
             ->recordActions([
+                BescheinigungActions::pdfOeffnen(),
+                BescheinigungActions::pdfErzeugen(),
                 EditAction::make(),
-                Action::make('pdf')
-                    ->label('PDF')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn ($record) => $record->pdf_pfad
-                        ? asset('storage/' . $record->pdf_pfad)
-                        : null
-                    )
-                    ->openUrlInNewTab()
-                    ->visible(fn ($record) => $record->pdf_pfad !== null),
             ])
             ->toolbarActions([
+                BescheinigungActions::pdfsErzeugenBulk(),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),

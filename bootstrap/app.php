@@ -13,9 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+        // Filament does not use the `web` group, so the admin panel registers
+        // TailscaleOnly in its own stack (see AdminPanelProvider).
         $middleware->web(append: [
             \App\Http\Middleware\TailscaleOnly::class,
         ]);
+
+        // The only login screen is the one of the Filament panel.
+        $middleware->redirectGuestsTo(fn () => route('filament.admin.auth.login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

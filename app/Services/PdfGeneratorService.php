@@ -6,18 +6,18 @@ use App\Enums\SpendeStatus;
 use App\Models\Setting;
 use App\Models\Spende;
 use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 
 class PdfGeneratorService
 {
     public function __construct(
         private GotenbergService $gotenberg,
+        private VersandprotokollService $versandprotokoll,
     ) {}
 
     /**
      * Generate a PDF for a single Spende, store it, and update the record.
      *
-     * @return string Storage path relative to public disk
+     * @return string Storage path relative to the configured PDF disk
      */
     public function generiere(Spende $spende): string
     {
@@ -29,12 +29,13 @@ class PdfGeneratorService
 
         $pfad     = config('spendenquittung.pdf_storage_path') . '/' . $spende->bescheinigungsnummer . '.pdf';
 
-        Storage::disk('public')->put($pfad, $pdfBytes);
+        Storage::disk(config('spendenquittung.pdf_disk'))->put($pfad, $pdfBytes);
 
-        $spende->update([
-            'pdf_pfad' => $pfad,
-            'status'   => SpendeStatus::Erstellt,
-        ]);
+        $spende->update(['pdf_pfad' => $pfad]);
+
+        // Regenerating a receipt that was already printed or sent must not
+        // reset it to "PDF erstellt".
+        $this->versandprotokoll->setzeStatus($spende, SpendeStatus::Erstellt);
 
         return $pfad;
     }

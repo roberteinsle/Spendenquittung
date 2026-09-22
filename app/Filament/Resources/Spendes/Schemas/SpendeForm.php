@@ -8,12 +8,12 @@ use App\Models\Foerderungszweck;
 use App\Models\Spender;
 use App\Services\BetragInWortenService;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class SpendeForm

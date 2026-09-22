@@ -19,10 +19,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Storage Paths (relative to storage/app/public/)
+    | Storage Paths
     |--------------------------------------------------------------------------
+    | Generated receipts contain personal data and are therefore stored on a
+    | private disk. They are only served through the authenticated route
+    | `bescheinigung.pdf`, never via a public symlink.
     */
-    'pdf_storage_path'        => 'pdfs',
+    'pdf_disk'                => env('PDF_DISK', 'local'),
+    'pdf_storage_path'        => 'bescheinigungen',
     'signature_storage_path'  => 'unterschriften',
     'logo_storage_path'       => 'logos',
 
