@@ -20,7 +20,7 @@ class TailscaleOnly
             return $next($request);
         }
 
-        abort(403, 'Zugriff nur über Tailscale erlaubt.');
+        abort(403, 'Externer Zugriff nicht möglich.');
     }
 
     private function isTailscaleIp(string $ip): bool

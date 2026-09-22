@@ -14,7 +14,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
-      TAILSCALE_ONLY: "true"
+      TAILSCALE_ONLY: ${TAILSCALE_ONLY:-false}
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
@@ -52,7 +52,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
-      TAILSCALE_ONLY: "true"
+      TAILSCALE_ONLY: ${TAILSCALE_ONLY:-false}
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
