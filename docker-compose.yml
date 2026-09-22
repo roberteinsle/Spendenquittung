@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: .
+      target: production
+    ports:
+      - "8080:80"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: "http://localhost:8080"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: spendenquittung
+      DB_USERNAME: app
+      DB_PASSWORD: secret
+      GOTENBERG_URL: "http://gotenberg:3000"
+      TAILSCALE_ONLY: "false"
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    volumes:
+      - pdf_storage:/var/www/html/storage/app/public/pdfs
+      - asset_storage:/var/www/html/storage/app/public
+    depends_on:
+      postgres:
+        condition: service_healthy
+      gotenberg:
+        condition: service_started
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: spendenquittung
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d spendenquittung"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=false"
+      - "--chromium-allow-list=file:///.*"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  pdf_storage:
+  asset_storage:
