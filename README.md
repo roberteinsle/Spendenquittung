@@ -16,6 +16,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - **Bescheinigungsnummern** – werden automatisch vergeben (Format `YYxxxx`, z.B. `264711`)
 - **Betrag in Worten** – wird automatisch auf Deutsch ausgeschrieben
 - **Mehrere Förderungszwecke** – konfigurierbar mit vollem juristischen Text je Zweck
+- **SMTP im Browser konfigurierbar** – inklusive Testmail-Knopf, Passwort verschlüsselt gespeichert
 - **E-Mail-Versand** – Bescheinigung als PDF-Anhang, mit passender Anrede (Sie oder Du) und frei konfigurierbarem Text
 - **Export** – Spender- und Bescheinigungslisten als Excel, Markdown oder XML, jeweils passend zu Filter, Suche oder Auswahl
 - **Versandprotokoll** – jeder Zugriff auf ein PDF und jeder E-Mail-Versand wird mit Benutzer, Zeitpunkt und Ergebnis protokolliert
@@ -244,6 +245,10 @@ Unter **Bescheinigungen** stehen je Eintrag drei Aktionen bereit:
 - **Per E-Mail senden** – schickt die Bescheinigung als PDF-Anhang an den Spender. Nur verfügbar, wenn ein PDF existiert; ohne hinterlegte E-Mail-Adresse ist die Aktion deaktiviert. Auch als Massenaktion, die Bescheinigungen ohne PDF oder ohne Adresse überspringt.
 
 Der Status einer Bescheinigung wandert dabei von *Erfasst* über *PDF erstellt* zu *Gedruckt*; ein erneutes Erzeugen setzt einen bereits erreichten Status nie zurück. Jeder Abruf eines PDFs landet im **Versandprotokoll** unterhalb des Bearbeiten-Formulars.
+
+Den **SMTP-Zugang** trägst du unter *Einstellungen → SMTP-Server* ein: Server, Port, Benutzername, Passwort und Verschlüsselung. Der Knopf **Testmail senden** verschickt sofort – nicht über die Queue – und meldet die Fehlermeldung des Servers im Klartext zurück, wenn etwas nicht stimmt. Er nutzt dabei die Angaben, die gerade im Formular stehen, auch ungespeicherte.
+
+Bleibt das Feld *Server* leer, gilt weiterhin, was in der Umgebung (`MAIL_*`) konfiguriert ist. Das Passwort wird verschlüsselt gespeichert und nie ins Formular zurückgeschrieben; leer lassen behält das gespeicherte.
 
 > Der E-Mail-Versand läuft über die Queue. Es muss also ein Worker laufen (`php artisan queue:work`; im Docker-Compose erledigt das der `worker`-Container). Ohne Worker bleiben die E-Mails liegen und es erscheint kein Protokolleintrag.
 

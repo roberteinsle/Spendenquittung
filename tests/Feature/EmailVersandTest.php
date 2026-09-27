@@ -15,6 +15,7 @@ use App\Models\Setting;
 use App\Models\Spende;
 use App\Models\Spender;
 use App\Models\User;
+use App\Services\MailKonfigurationService;
 use App\Services\VersandprotokollService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -86,7 +87,7 @@ class EmailVersandTest extends TestCase
         $user   = User::factory()->create();
 
         (new VersendeZuwendungsbestaetigung($spende, $user->id))
-            ->handle(app(VersandprotokollService::class));
+            ->handle(app(VersandprotokollService::class), app(MailKonfigurationService::class));
 
         Mail::assertSent(ZuwendungsbestaetigungMail::class, function (ZuwendungsbestaetigungMail $mail) use ($spende) {
             return $mail->hasTo('max@example.test')
@@ -101,7 +102,7 @@ class EmailVersandTest extends TestCase
         $user   = User::factory()->create();
 
         (new VersendeZuwendungsbestaetigung($spende, $user->id))
-            ->handle(app(VersandprotokollService::class));
+            ->handle(app(VersandprotokollService::class), app(MailKonfigurationService::class));
 
         $protokoll = $spende->versandprotokolle()->sole();
         $this->assertSame(VersandKanal::Email, $protokoll->kanal);
@@ -121,7 +122,7 @@ class EmailVersandTest extends TestCase
 
         try {
             (new VersendeZuwendungsbestaetigung($spende))
-                ->handle(app(VersandprotokollService::class));
+                ->handle(app(VersandprotokollService::class), app(MailKonfigurationService::class));
         } finally {
             Mail::assertNothingSent();
             $this->assertSame(SpendeStatus::Erstellt, $spende->refresh()->status);
@@ -137,7 +138,7 @@ class EmailVersandTest extends TestCase
 
         try {
             (new VersendeZuwendungsbestaetigung($spende))
-                ->handle(app(VersandprotokollService::class));
+                ->handle(app(VersandprotokollService::class), app(MailKonfigurationService::class));
         } finally {
             Mail::assertNothingSent();
         }

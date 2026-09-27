@@ -4,7 +4,10 @@ namespace App\Filament\Pages;
 
 use App\Models\Setting;
 use BackedEnum;
+use App\Mail\TestMail;
+use App\Services\MailKonfigurationService;
 use Filament\Actions\Action;
+use Filament\Schemas\Components\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -14,6 +17,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -53,6 +58,7 @@ class Einstellungen extends Page implements HasForms
             'unterzeichner_name', 'unterzeichner_titel', 'ausstellungsort',
             'unterschrift_pfad', 'logo_pfad', 'herzfigur_pfad',
             'mail_betreff', 'mail_text', 'mail_text_du',
+            'mail_host', 'mail_port', 'mail_benutzername', 'mail_verschluesselung',
         ];
 
         $formData = [];
@@ -162,6 +168,69 @@ class Einstellungen extends Page implements HasForms
                             ->helperText('PNG mit transparentem Hintergrund, eng um die Unterschrift beschnitten. Im PDF erscheint sie in maximal 60 × 15 mm – für einen sauberen Druck also mindestens 709 × 177 Pixel, besser 1400 × 350.'),
                     ]),
 
+                Section::make('SMTP-Server')
+                    ->description('Zugang zum Postausgangsserver. Bleibt das Feld Server leer, gilt weiterhin, was in der Umgebung konfiguriert ist.')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('mail_host')
+                                    ->label('Server')
+                                    ->placeholder('smtp.beispiel.de')
+                                    ->columnSpan(2),
+
+                                TextInput::make('mail_port')
+                                    ->label('Port')
+                                    ->numeric()
+                                    ->placeholder('587'),
+                            ]),
+
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('mail_benutzername')
+                                    ->label('Benutzername')
+                                    ->autocomplete('off'),
+
+                                TextInput::make('mail_passwort')
+                                    ->label('Passwort')
+                                    ->password()
+                                    ->revealable()
+                                    ->autocomplete('new-password')
+                                    // Wird verschlüsselt abgelegt und nie ins
+                                    // Formular zurückgeschrieben; leer heisst
+                                    // "bestehendes Passwort behalten".
+                                    ->dehydrated(fn (?string $state): bool => filled($state))
+                                    ->helperText('Leer lassen, um das gespeicherte Passwort zu behalten.'),
+
+                                Select::make('mail_verschluesselung')
+                                    ->label('Verschlüsselung')
+                                    ->options([
+                                        'tls'  => 'STARTTLS (Port 587)',
+                                        'ssl'  => 'SSL/TLS (Port 465)',
+                                        'keine' => 'Keine',
+                                    ])
+                                    ->default('tls')
+                                    ->native(false),
+                            ]),
+
+                        Actions::make([
+                            Action::make('testmail')
+                                ->label('Testmail senden')
+                                ->icon('heroicon-o-paper-airplane')
+                                ->color('secondary')
+                                ->schema([
+                                    TextInput::make('empfaenger')
+                                        ->label('An welche Adresse?')
+                                        ->email()
+                                        ->required()
+                                        ->default(fn () => auth()->user()?->email),
+                                ])
+                                ->modalHeading('Testmail senden')
+                                ->modalDescription('Verwendet die Angaben, die gerade im Formular stehen – auch ungespeicherte.')
+                                ->modalSubmitActionLabel('Senden')
+                                ->action(fn (array $data) => $this->sendeTestmail($data['empfaenger'])),
+                        ]),
+                    ]),
+
                 Section::make('E-Mail-Versand')
                     ->description('Platzhalter: :nummer, :betrag, :datum, :jahr, :zweck. Anrede und Grußformel werden automatisch ergänzt.')
                     ->schema([
@@ -215,6 +284,47 @@ class Einstellungen extends Page implements HasForms
             ->title('Einstellungen gespeichert')
             ->success()
             ->send();
+    }
+
+    /**
+     * Sendet synchron, nicht über die Queue: der Sinn des Knopfes ist die
+     * sofortige Rückmeldung, ob der Zugang stimmt.
+     */
+    public function sendeTestmail(string $empfaenger): void
+    {
+        // Absichtlich der Rohzustand statt form->getState(): letzteres validiert
+        // das komplette Formular, eine Testmail würde dann an einem leeren
+        // Pflichtfeld in einem ganz anderen Abschnitt scheitern.
+        $daten = $this->data;
+
+        app(MailKonfigurationService::class)->anwenden([
+            'host'             => $daten['mail_host'] ?? '',
+            'port'             => $daten['mail_port'] ?? '',
+            'benutzername'     => $daten['mail_benutzername'] ?? '',
+            // Leeres Feld heisst "gespeichertes Passwort verwenden".
+            'passwort'         => filled($daten['mail_passwort'] ?? null)
+                ? $daten['mail_passwort']
+                : Setting::get('mail_passwort', ''),
+            'verschluesselung' => $daten['mail_verschluesselung'] ?? 'tls',
+        ]);
+
+        try {
+            Mail::to($empfaenger)->send(new TestMail);
+
+            Notification::make()
+                ->title('Testmail verschickt')
+                ->body("Sie ging an {$empfaenger}. Kommt sie nicht an, lohnt auch ein Blick in den Spam-Ordner.")
+                ->success()
+                ->persistent()
+                ->send();
+        } catch (Throwable $e) {
+            Notification::make()
+                ->title('Testmail fehlgeschlagen')
+                ->body($e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
+        }
     }
 
     protected function getFormActions(): array

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 class Setting extends Model
 {
@@ -12,6 +14,14 @@ class Setting extends Model
     public    $incrementing = false;
 
     protected $fillable = ['key', 'value', 'type'];
+
+    /**
+     * Schlüssel, deren Wert verschlüsselt abgelegt wird. Nur der Cache und die
+     * Datenbank sehen den Chiffretext – ausgelesen wird er entschlüsselt.
+     */
+    public const GEHEIM = [
+        'mail_passwort',
+    ];
 
     public static function get(string $key, mixed $default = null): mixed
     {
@@ -31,21 +41,28 @@ class Setting extends Model
         }
 
         return match($cached['type']) {
-            'boolean' => (bool) $cached['value'],
-            'json'    => json_decode($cached['value'], true),
-            default   => $cached['value'],
+            'boolean'   => (bool) $cached['value'],
+            'json'      => json_decode($cached['value'], true),
+            // Im Cache liegt der Chiffretext, entschlüsselt wird erst hier.
+            'encrypted' => static::entschluessele($cached['value']) ?? $default,
+            default     => $cached['value'],
         };
     }
 
     public static function set(string $key, mixed $value): void
     {
         $type = match(true) {
-            is_bool($value)  => 'boolean',
-            is_array($value) => 'json',
-            default          => 'string',
+            in_array($key, static::GEHEIM, true) => 'encrypted',
+            is_bool($value)                      => 'boolean',
+            is_array($value)                     => 'json',
+            default                              => 'string',
         };
 
-        $stored = is_array($value) ? json_encode($value) : (string) $value;
+        $stored = match($type) {
+            'encrypted' => Crypt::encryptString((string) $value),
+            'json'      => json_encode($value),
+            default     => (string) $value,
+        };
 
         static::updateOrCreate(
             ['key' => $key],
@@ -53,5 +70,22 @@ class Setting extends Model
         );
 
         Cache::forget("setting_{$key}");
+    }
+
+    /**
+     * Ein alter, noch unverschlüsselter Wert oder ein Schlüsselwechsel darf die
+     * Seite nicht zerlegen – dann gilt der Wert schlicht als nicht gesetzt.
+     */
+    private static function entschluessele(?string $wert): ?string
+    {
+        if (blank($wert)) {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($wert);
+        } catch (DecryptException) {
+            return null;
+        }
     }
 }

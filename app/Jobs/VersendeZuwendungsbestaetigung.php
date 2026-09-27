@@ -6,6 +6,7 @@ use App\Enums\VersandErgebnis;
 use App\Enums\VersandKanal;
 use App\Mail\ZuwendungsbestaetigungMail;
 use App\Models\Spende;
+use App\Services\MailKonfigurationService;
 use App\Services\VersandprotokollService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -32,13 +33,19 @@ class VersendeZuwendungsbestaetigung implements ShouldQueue
         public ?int $benutzerId = null,
     ) {}
 
-    public function handle(VersandprotokollService $versandprotokoll): void
-    {
+    public function handle(
+        VersandprotokollService $versandprotokoll,
+        MailKonfigurationService $mailKonfiguration,
+    ): void {
         $empfaenger = $this->empfaenger();
 
         if (! $this->spende->pdfVorhanden()) {
             throw new RuntimeException('Für diese Bescheinigung ist kein PDF vorhanden.');
         }
+
+        // Der Worker lebt lange und hat die Mail-Konfiguration vom Start; der
+        // in den Einstellungen hinterlegte Zugang muss deshalb je Job greifen.
+        $mailKonfiguration->anwenden();
 
         Mail::to($empfaenger)->send(new ZuwendungsbestaetigungMail($this->spende));
 
