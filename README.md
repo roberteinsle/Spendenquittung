@@ -108,10 +108,15 @@ Alternativ kann Coolify mit einem GitHub PAT (`read:packages`) als private Regis
 | `DB_USERNAME` | Datenbankbenutzer |
 | `DB_PASSWORD` | Sicheres Passwort |
 | `APP_TAG` | Image-Tag, Standard: `latest` |
+| `TAILSCALE_ONLY` | `true` beschränkt den Zugriff auf das Tailscale-Netz |
+| `MAIL_MAILER` | `smtp` für echten Versand; ohne Angabe landen E-Mails nur im Log |
+| `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD` | SMTP-Zugang |
 
 4. Deployment starten
 
-Beim ersten Start werden Datenbankmigrationen und das Seeding automatisch ausgeführt.
+Beim ersten Start werden Migrationen und Seeder automatisch ausgeführt, sofern `AUTORUN_LARAVEL_MIGRATION_SEED=true` gesetzt ist (in den mitgelieferten Compose-Dateien ist das der Fall). Die Seeder legen die Benutzerkonten, die Förderungszwecke und die Grundeinstellungen an – **ohne sie gibt es kein Konto zum Anmelden**. Sie sind idempotent, ein Neustart überschreibt also nichts.
+
+> Die angelegten Konten lauten `admin@example.com`, `user1@example.com` und `user2@example.com`, jeweils mit dem Passwort `password`. **Vor dem ersten echten Einsatz ändern.**
 
 ---
 

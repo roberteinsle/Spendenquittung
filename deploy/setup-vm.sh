@@ -53,12 +53,21 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
-      TAILSCALE_ONLY: "false"
+      TAILSCALE_ONLY: ${TAILSCALE_ONLY:-true}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
       AUTORUN_ENABLED: "true"
       AUTORUN_LARAVEL_MIGRATION: "true"
+      # Die Seeder sind idempotent (firstOrCreate), legen aber beim ersten Start
+      # Benutzer, Foerderungszwecke und Einstellungen an. Ohne das gibt es kein
+      # Konto zum Anmelden.
+      AUTORUN_LARAVEL_MIGRATION_SEED: "true"
       LOG_CHANNEL: stderr
     volumes:
       - app-storage:/var/www/html/storage
@@ -83,7 +92,12 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
-      TAILSCALE_ONLY: "false"
+      TAILSCALE_ONLY: ${TAILSCALE_ONLY:-true}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
@@ -168,8 +182,19 @@ echo "  DB_DATABASE=spendenquittung"
 echo "  DB_USERNAME=app"
 echo "  DB_PASSWORD=<sicheres-passwort>"
 echo ""
+echo "Optional in derselben .env:"
+echo "  TAILSCALE_ONLY=false   # nur zum Debuggen, oeffnet die App fuer alle IPs"
+echo "  MAIL_MAILER=smtp       # ohne das landen E-Mails nur im Container-Log"
+echo "  MAIL_HOST=smtp.beispiel.de"
+echo "  MAIL_USERNAME=..."
+echo "  MAIL_PASSWORD=..."
+echo ""
 echo "Dann starten mit:"
 echo "  cd /opt/spendenquittung && docker compose --env-file .env up -d"
+echo ""
+echo "Beim ersten Start werden Migrationen UND Seeder ausgefuehrt. Danach sofort"
+echo "die Passwoerter der angelegten Konten aendern (admin@example.com/password):"
+echo "  docker compose exec app php artisan tinker"
 echo ""
 echo "Zertifikat erneuern (monatlich per Cron empfohlen):"
 echo "  tailscale cert ${TAILSCALE_DOMAIN}"
