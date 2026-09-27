@@ -2,26 +2,26 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Setting;
-use BackedEnum;
 use App\Mail\TestMail;
+use App\Models\Setting;
 use App\Services\MailKonfigurationService;
+use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Schemas\Components\Actions;
 use Filament\Forms\Components\FileUpload;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Mail;
-use Throwable;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class Einstellungen extends Page implements HasForms
 {
@@ -125,9 +125,9 @@ class Einstellungen extends Page implements HasForms
                         Select::make('rechtliche_form')
                             ->label('Rechtsform')
                             ->options([
-                                'placeholder'         => '⚠️ Noch nicht geklärt (Platzhalter-Text)',
+                                'placeholder' => '⚠️ Noch nicht geklärt (Platzhalter-Text)',
                                 'oeffentlich_rechtlich' => 'Körperschaft des öffentlichen Rechts',
-                                'privatrechtlich'     => 'Gemeinnützige Stiftung privaten Rechts',
+                                'privatrechtlich' => 'Gemeinnützige Stiftung privaten Rechts',
                             ])
                             ->native(false)
                             ->required(),
@@ -219,8 +219,8 @@ class Einstellungen extends Page implements HasForms
                                 Select::make('mail_verschluesselung')
                                     ->label('Verschlüsselung')
                                     ->options([
-                                        'tls'  => 'STARTTLS (Port 587)',
-                                        'ssl'  => 'SSL/TLS (Port 465)',
+                                        'tls' => 'STARTTLS (Port 587)',
+                                        'ssl' => 'SSL/TLS (Port 465)',
                                         'keine' => 'Keine',
                                     ])
                                     ->default('tls')
@@ -312,12 +312,14 @@ class Einstellungen extends Page implements HasForms
         // Pflichtfeld in einem ganz anderen Abschnitt scheitern.
         $daten = $this->data;
 
-        app(MailKonfigurationService::class)->anwenden([
-            'host'             => $daten['mail_host'] ?? '',
-            'port'             => $daten['mail_port'] ?? '',
-            'benutzername'     => $daten['mail_benutzername'] ?? '',
+        $konfiguration = app(MailKonfigurationService::class);
+
+        $konfiguration->anwenden([
+            'host' => $daten['mail_host'] ?? '',
+            'port' => $daten['mail_port'] ?? '',
+            'benutzername' => $daten['mail_benutzername'] ?? '',
             // Leeres Feld heisst "gespeichertes Passwort verwenden".
-            'passwort'         => filled($daten['mail_passwort'] ?? null)
+            'passwort' => filled($daten['mail_passwort'] ?? null)
                 ? $daten['mail_passwort']
                 : Setting::get('mail_passwort', ''),
             'verschluesselung' => $daten['mail_verschluesselung'] ?? 'tls',
@@ -325,22 +327,24 @@ class Einstellungen extends Page implements HasForms
             'absender_name' => $daten['mail_absender_name'] ?? '',
         ]);
 
-        try {
-            // Absender aus dem Formular, damit auch der ungespeicherte Stand
-            // geprüft werden kann.
-            $absender = app(MailKonfigurationService::class)->absender([
-                'absender_email' => $daten['mail_absender_email'] ?? '',
-                'absender_name' => $daten['mail_absender_name'] ?? '',
-            ]);
+        $absender = $konfiguration->absender([
+            'absender_email' => $daten['mail_absender_email'] ?? '',
+            'absender_name' => $daten['mail_absender_name'] ?? '',
+        ]);
 
-            Mail::to($empfaenger)->send(new TestMail($absender));
-
+        if ($absender === null) {
             Notification::make()
-                ->title('Testmail verschickt')
-                ->body("Sie ging an {$empfaenger}. Kommt sie nicht an, lohnt auch ein Blick in den Spam-Ordner.")
-                ->success()
+                ->title('Kein Absender hinterlegt')
+                ->body('Ohne Absenderadresse nimmt kein Server die Nachricht an. Bitte oben eine eintragen oder die E-Mail unter Stiftungsdaten ausfüllen.')
+                ->danger()
                 ->persistent()
                 ->send();
+
+            return;
+        }
+
+        try {
+            Mail::to($empfaenger)->send(new TestMail($absender));
         } catch (Throwable $e) {
             Notification::make()
                 ->title('Testmail fehlgeschlagen')
@@ -348,7 +352,41 @@ class Einstellungen extends Page implements HasForms
                 ->danger()
                 ->persistent()
                 ->send();
+
+            return;
         }
+
+        $this->meldeVersand($empfaenger, $absender->address);
+    }
+
+    /**
+     * Ein Versand über den log- oder array-Mailer "gelingt" immer, verlässt den
+     * Server aber nie. Das als Erfolg zu melden, wäre irreführend.
+     */
+    private function meldeVersand(string $empfaenger, string $absender): void
+    {
+        $mailer = (string) config('mail.default');
+
+        if (in_array($mailer, ['log', 'array'], true)) {
+            Notification::make()
+                ->title('Nichts versendet – nur ins Log geschrieben')
+                ->body('Es ist kein SMTP-Server hinterlegt, deshalb ist die Nachricht nicht hinausgegangen. Bitte oben Server, Port und Zugangsdaten eintragen.')
+                ->warning()
+                ->persistent()
+                ->send();
+
+            return;
+        }
+
+        $host = (string) config('mail.mailers.smtp.host');
+        $port = (string) config('mail.mailers.smtp.port');
+
+        Notification::make()
+            ->title('Testmail verschickt')
+            ->body("Über {$host}:{$port} von {$absender} an {$empfaenger}. Kommt sie nicht an, lohnt ein Blick in den Spam-Ordner – und die Prüfung, ob der Anbieter diese Absenderadresse erlaubt.")
+            ->success()
+            ->persistent()
+            ->send();
     }
 
     protected function getFormActions(): array

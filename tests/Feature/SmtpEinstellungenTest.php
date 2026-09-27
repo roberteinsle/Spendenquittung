@@ -36,6 +36,8 @@ class SmtpEinstellungenTest extends TestCase
         Setting::set('mail_benutzername', 'post@beispiel.test');
         Setting::set('mail_passwort', 'geheim123');
         Setting::set('mail_verschluesselung', 'tls');
+        // Ohne Absender verweigert die Aktion den Versand.
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
     }
 
     public function test_passwort_liegt_verschluesselt_in_der_datenbank(): void
@@ -187,6 +189,46 @@ class SmtpEinstellungenTest extends TestCase
             return $absender->address === 'neu@smtp-anbieter.test'
                 && $absender->name === 'Neuer Absender';
         });
+    }
+
+    public function test_ohne_server_warnt_die_aktion_statt_erfolg_zu_melden(): void
+    {
+        Mail::fake();
+        config(['mail.default' => 'log']);
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
+
+        Livewire::actingAs($this->admin())
+            ->test(Einstellungen::class)
+            ->call('sendeTestmail', 'ziel@example.test')
+            ->assertNotified('Nichts versendet – nur ins Log geschrieben');
+    }
+
+    public function test_mit_server_meldet_die_aktion_erfolg_samt_server(): void
+    {
+        Mail::fake();
+        $this->smtpHinterlegen();
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
+
+        Livewire::actingAs($this->admin())
+            ->test(Einstellungen::class)
+            ->set('data.mail_host', 'smtp.beispiel.test')
+            ->set('data.mail_port', '587')
+            ->call('sendeTestmail', 'ziel@example.test')
+            ->assertNotified('Testmail verschickt');
+    }
+
+    public function test_ohne_absender_bricht_die_aktion_ab(): void
+    {
+        Mail::fake();
+        Setting::set('stiftung_email', '');
+        Setting::set('mail_absender_email', '');
+
+        Livewire::actingAs($this->admin())
+            ->test(Einstellungen::class)
+            ->call('sendeTestmail', 'ziel@example.test')
+            ->assertNotified('Kein Absender hinterlegt');
+
+        Mail::assertNothingSent();
     }
 
     public function test_mitarbeiter_kommt_nicht_an_die_smtp_daten(): void
