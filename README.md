@@ -180,9 +180,17 @@ Nach dem ersten Login unter **Einstellungen** hinterlegen:
 
 Ebenfalls unter **Einstellungen**:
 
-- **Logo** – PNG oder JPG, mind. 300 dpi bei Zielgröße
-- **Unterschrift** – PNG mit transparentem Hintergrund empfohlen
-- Optional: Herzfigur / Signet (je nach Gestaltung der Vorlage)
+| Bild | Platz im PDF | Mindestens | Empfohlen |
+|---|---|---|---|
+| Unterschrift | 60 × 15 mm | 709 × 177 px | 1400 × 350 px |
+| Logo | 40 × 20 mm | 472 × 236 px | 945 × 472 px |
+| Herzfigur | 25 × 18 mm | 295 × 213 px | 591 × 425 px |
+
+Jeweils **PNG mit transparentem Hintergrund**. JPG wird zwar angenommen, bringt aber einen sichtbaren hellen Kasten und Kompressionsartefakte um die feinen Linien einer Unterschrift mit.
+
+Die Bilder werden proportional in den angegebenen Rahmen eingepasst – das Seitenverhältnis bestimmt also, welche der beiden Kanten am Ende begrenzt. Deshalb die Vorlage **eng um die Zeichnung beschneiden**: leerer Rand im Bild kostet Platz im Rahmen und lässt die Unterschrift kleiner wirken.
+
+Die Werte ergeben sich aus der Vorlage ([resources/views/pdf/zuwendungsbestaetigung.blade.php](resources/views/pdf/zuwendungsbestaetigung.blade.php)); wer sie ändert, passt die Größen entsprechend an.
 
 ### Anmeldung
 

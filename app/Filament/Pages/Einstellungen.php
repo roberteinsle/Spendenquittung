@@ -146,12 +146,12 @@ class Einstellungen extends Page implements HasForms
                             ]),
 
                         FileUpload::make('unterschrift_pfad')
-                            ->label('Unterschrift (PNG mit transparentem Hintergrund)')
+                            ->label('Unterschrift')
                             ->image()
                             ->disk('public')
                             ->directory('unterschriften')
                             ->acceptedFileTypes(['image/png', 'image/jpeg'])
-                            ->helperText('PNG mit transparentem Hintergrund empfohlen'),
+                            ->helperText('PNG mit transparentem Hintergrund, eng um die Unterschrift beschnitten. Im PDF erscheint sie in maximal 60 × 15 mm – für einen sauberen Druck also mindestens 709 × 177 Pixel, besser 1400 × 350.'),
                     ]),
 
                 Section::make('E-Mail-Versand')
@@ -180,13 +180,15 @@ class Einstellungen extends Page implements HasForms
                                     ->label('Logo')
                                     ->image()
                                     ->disk('public')
-                                    ->directory('logos'),
+                                    ->directory('logos')
+                                    ->helperText('Maximal 40 × 20 mm im PDF, also mindestens 472 × 236 Pixel, besser 945 × 472. PNG mit transparentem Hintergrund, da der Briefkopf farbig hinterlegt ist.'),
 
                                 FileUpload::make('herzfigur_pfad')
                                     ->label('Herzfigur')
                                     ->image()
                                     ->disk('public')
-                                    ->directory('logos'),
+                                    ->directory('logos')
+                                    ->helperText('Maximal 25 × 18 mm im PDF, also mindestens 295 × 213 Pixel, besser 591 × 425. Ebenfalls PNG mit Transparenz.'),
                             ]),
                     ]),
             ])
