@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -23,6 +24,14 @@ class MailKonfigurationService
     public function anwenden(?array $daten = null): bool
     {
         $daten ??= $this->ausEinstellungen();
+
+        // Der Absender gilt auch dann, wenn der Server aus der Umgebung kommt.
+        if ($absender = $this->absender($daten)) {
+            config([
+                'mail.from.address' => $absender->address,
+                'mail.from.name' => $absender->name ?: null,
+            ]);
+        }
 
         if (blank($daten['host'] ?? null)) {
             // Nichts hinterlegt: es bleibt bei dem, was die Umgebung vorgibt.
@@ -58,7 +67,26 @@ class MailKonfigurationService
             'benutzername' => Setting::get('mail_benutzername', ''),
             'passwort' => Setting::get('mail_passwort', ''),
             'verschluesselung' => Setting::get('mail_verschluesselung', 'tls'),
+            'absender_email' => Setting::get('mail_absender_email', ''),
+            'absender_name' => Setting::get('mail_absender_name', ''),
         ];
+    }
+
+    /**
+     * Absender für alle ausgehenden Nachrichten. Ist unter SMTP nichts
+     * hinterlegt, gilt die Adresse aus den Stiftungsdaten – viele Provider
+     * verlangen allerdings, dass sie zum SMTP-Konto passt.
+     *
+     * @param  array<string, mixed>|null  $daten
+     */
+    public function absender(?array $daten = null): ?Address
+    {
+        $daten ??= $this->ausEinstellungen();
+
+        $email = trim((string) ($daten['absender_email'] ?? '')) ?: (string) Setting::get('stiftung_email', '');
+        $name = trim((string) ($daten['absender_name'] ?? '')) ?: (string) Setting::get('stiftung_name', '');
+
+        return filled($email) ? new Address($email, $name ?: null) : null;
     }
 
     public function istKonfiguriert(): bool

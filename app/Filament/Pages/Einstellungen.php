@@ -59,6 +59,7 @@ class Einstellungen extends Page implements HasForms
             'unterschrift_pfad', 'logo_pfad', 'herzfigur_pfad',
             'mail_betreff', 'mail_text', 'mail_text_du',
             'mail_host', 'mail_port', 'mail_benutzername', 'mail_verschluesselung',
+            'mail_absender_name', 'mail_absender_email',
         ];
 
         $formData = [];
@@ -171,6 +172,20 @@ class Einstellungen extends Page implements HasForms
                 Section::make('SMTP-Server')
                     ->description('Zugang zum Postausgangsserver. Bleibt das Feld Server leer, gilt weiterhin, was in der Umgebung konfiguriert ist.')
                     ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('mail_absender_name')
+                                    ->label('Absendername')
+                                    ->placeholder(fn () => Setting::get('stiftung_name', 'Name der Organisation'))
+                                    ->helperText('Leer lassen: es gilt der Stiftungsname.'),
+
+                                TextInput::make('mail_absender_email')
+                                    ->label('Absenderadresse')
+                                    ->email()
+                                    ->placeholder(fn () => Setting::get('stiftung_email', 'kontakt@beispiel.de'))
+                                    ->helperText('Viele Anbieter verlangen, dass sie zum SMTP-Konto passt. Leer lassen: es gilt die E-Mail aus den Stiftungsdaten.'),
+                            ]),
+
                         Grid::make(3)
                             ->schema([
                                 TextInput::make('mail_host')
@@ -306,10 +321,19 @@ class Einstellungen extends Page implements HasForms
                 ? $daten['mail_passwort']
                 : Setting::get('mail_passwort', ''),
             'verschluesselung' => $daten['mail_verschluesselung'] ?? 'tls',
+            'absender_email' => $daten['mail_absender_email'] ?? '',
+            'absender_name' => $daten['mail_absender_name'] ?? '',
         ]);
 
         try {
-            Mail::to($empfaenger)->send(new TestMail);
+            // Absender aus dem Formular, damit auch der ungespeicherte Stand
+            // geprüft werden kann.
+            $absender = app(MailKonfigurationService::class)->absender([
+                'absender_email' => $daten['mail_absender_email'] ?? '',
+                'absender_name' => $daten['mail_absender_name'] ?? '',
+            ]);
+
+            Mail::to($empfaenger)->send(new TestMail($absender));
 
             Notification::make()
                 ->title('Testmail verschickt')

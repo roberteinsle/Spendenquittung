@@ -4,9 +4,9 @@ namespace App\Mail;
 
 use App\Models\Setting;
 use App\Models\Spende;
+use App\Services\MailKonfigurationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -22,13 +22,8 @@ class ZuwendungsbestaetigungMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $absenderEmail = Setting::get('stiftung_email');
-        $absenderName  = Setting::get('stiftung_name');
-
         return new Envelope(
-            from: $absenderEmail
-                ? new Address($absenderEmail, $absenderName ?: null)
-                : null,
+            from: app(MailKonfigurationService::class)->absender(),
             subject: $this->platzhalterErsetzen(
                 Setting::get('mail_betreff') ?: 'Ihre Zuwendungsbestätigung Nr. :nummer',
             ),
@@ -43,13 +38,13 @@ class ZuwendungsbestaetigungMail extends Mailable
             markdown: 'mail.zuwendungsbestaetigung',
             with: [
                 'briefanrede' => $this->spende->spender?->briefanrede ?? 'Guten Tag',
-                'text'        => $this->platzhalterErsetzen((string) Setting::get($schluessel, '')),
-                'settings'    => [
-                    'unterzeichner_name'  => Setting::get('unterzeichner_name', ''),
+                'text' => $this->platzhalterErsetzen((string) Setting::get($schluessel, '')),
+                'settings' => [
+                    'unterzeichner_name' => Setting::get('unterzeichner_name', ''),
                     'unterzeichner_titel' => Setting::get('unterzeichner_titel', ''),
-                    'stiftung_name'       => Setting::get('stiftung_name', ''),
-                    'stiftung_web'        => Setting::get('stiftung_web', ''),
-                    'stiftung_url'        => $this->stiftungUrl(),
+                    'stiftung_name' => Setting::get('stiftung_name', ''),
+                    'stiftung_web' => Setting::get('stiftung_web', ''),
+                    'stiftung_url' => $this->stiftungUrl(),
                 ],
             ],
         );

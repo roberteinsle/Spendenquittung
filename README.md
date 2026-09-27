@@ -248,6 +248,8 @@ Der Status einer Bescheinigung wandert dabei von *Erfasst* über *PDF erstellt* 
 
 Den **SMTP-Zugang** trägst du unter *Einstellungen → SMTP-Server* ein: Server, Port, Benutzername, Passwort und Verschlüsselung. Der Knopf **Testmail senden** verschickt sofort – nicht über die Queue – und meldet die Fehlermeldung des Servers im Klartext zurück, wenn etwas nicht stimmt. Er nutzt dabei die Angaben, die gerade im Formular stehen, auch ungespeicherte.
 
+Im selben Abschnitt stehen **Absendername** und **Absenderadresse**. Bleiben sie leer, gelten Name und E-Mail aus den Stiftungsdaten. Viele Anbieter verlangen allerdings, dass die Absenderadresse zum SMTP-Konto passt – dafür sind die Felder da. Sie gelten für Zuwendungsbestätigungen und Testmails gleichermaßen.
+
 Bleibt das Feld *Server* leer, gilt weiterhin, was in der Umgebung (`MAIL_*`) konfiguriert ist. Das Passwort wird verschlüsselt gespeichert und nie ins Formular zurückgeschrieben; leer lassen behält das gespeicherte.
 
 > Der E-Mail-Versand läuft über die Queue. Es muss also ein Worker laufen (`php artisan queue:work`; im Docker-Compose erledigt das der `worker`-Container). Ohne Worker bleiben die E-Mails liegen und es erscheint kein Protokolleintrag.

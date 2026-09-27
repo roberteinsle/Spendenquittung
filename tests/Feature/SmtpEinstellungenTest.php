@@ -121,6 +121,74 @@ class SmtpEinstellungenTest extends TestCase
         $this->assertSame('geheim123', config('mail.mailers.smtp.password'));
     }
 
+    public function test_absender_kommt_aus_den_smtp_feldern(): void
+    {
+        Setting::set('stiftung_name', 'Musterstiftung');
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
+        Setting::set('mail_absender_name', 'Spendenbüro');
+        Setting::set('mail_absender_email', 'post@smtp-anbieter.test');
+
+        $absender = app(MailKonfigurationService::class)->absender();
+
+        $this->assertSame('post@smtp-anbieter.test', $absender->address);
+        $this->assertSame('Spendenbüro', $absender->name);
+    }
+
+    public function test_absender_faellt_auf_die_stiftungsdaten_zurueck(): void
+    {
+        Setting::set('stiftung_name', 'Musterstiftung');
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
+        Setting::set('mail_absender_name', '');
+        Setting::set('mail_absender_email', '');
+
+        $absender = app(MailKonfigurationService::class)->absender();
+
+        $this->assertSame('kontakt@musterstiftung.test', $absender->address);
+        $this->assertSame('Musterstiftung', $absender->name);
+    }
+
+    public function test_bescheinigungsmail_nutzt_denselben_absender(): void
+    {
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
+        Setting::set('mail_absender_email', 'post@smtp-anbieter.test');
+        Setting::set('mail_absender_name', 'Spendenbüro');
+
+        $absender = app(MailKonfigurationService::class)->absender();
+
+        $this->assertSame('post@smtp-anbieter.test', $absender->address);
+        $this->assertSame('Spendenbüro', $absender->name);
+    }
+
+    public function test_anwenden_setzt_den_globalen_absender(): void
+    {
+        Setting::set('mail_absender_name', 'Spendenbüro');
+        Setting::set('mail_absender_email', 'post@smtp-anbieter.test');
+
+        app(MailKonfigurationService::class)->anwenden();
+
+        $this->assertSame('post@smtp-anbieter.test', config('mail.from.address'));
+        $this->assertSame('Spendenbüro', config('mail.from.name'));
+    }
+
+    public function test_testmail_nimmt_den_absender_aus_dem_formular(): void
+    {
+        Mail::fake();
+        Setting::set('stiftung_email', 'kontakt@musterstiftung.test');
+
+        Livewire::actingAs($this->admin())
+            ->test(Einstellungen::class)
+            ->set('data.mail_absender_email', 'neu@smtp-anbieter.test')
+            ->set('data.mail_absender_name', 'Neuer Absender')
+            ->call('sendeTestmail', 'ziel@example.test');
+
+        Mail::assertSent(TestMail::class, function (TestMail $mail): bool {
+            $absender = $mail->envelope()->from;
+
+            return $absender->address === 'neu@smtp-anbieter.test'
+                && $absender->name === 'Neuer Absender';
+        });
+    }
+
     public function test_mitarbeiter_kommt_nicht_an_die_smtp_daten(): void
     {
         $this->smtpHinterlegen();
