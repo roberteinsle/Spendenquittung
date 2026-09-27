@@ -17,6 +17,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - **Betrag in Worten** – wird automatisch auf Deutsch ausgeschrieben
 - **Mehrere Förderungszwecke** – konfigurierbar mit vollem juristischen Text je Zweck
 - **E-Mail-Versand** – Bescheinigung als PDF-Anhang, mit passender Anrede (Sie oder Du) und frei konfigurierbarem Text
+- **Export** – Spender- und Bescheinigungslisten als Excel, Markdown oder XML, jeweils passend zu Filter, Suche oder Auswahl
 - **Versandprotokoll** – jeder Zugriff auf ein PDF und jeder E-Mail-Versand wird mit Benutzer, Zeitpunkt und Ergebnis protokolliert
 
 ---
@@ -113,6 +114,20 @@ Alternativ kann Coolify mit einem GitHub PAT (`read:packages`) als private Regis
 Beim ersten Start werden Migrationen und Seeder automatisch ausgeführt, sofern `AUTORUN_LARAVEL_MIGRATION_SEED=true` gesetzt ist (in den mitgelieferten Compose-Dateien ist das der Fall). Die Seeder legen die Benutzerkonten, die Förderungszwecke und die Grundeinstellungen an – **ohne sie gibt es kein Konto zum Anmelden**. Sie sind idempotent, ein Neustart überschreibt also nichts.
 
 > Angelegt wird dabei ein einziges Konto namens *Administrator*, und nur solange überhaupt kein Benutzer existiert. Ein gelöschtes Konto kommt beim nächsten Start also nicht zurück.
+
+---
+
+## Daten exportieren
+
+Über **Spender** und **Bescheinigungen** gibt es jeweils die Schaltfläche *Exportieren*. Sie liefert genau das, was die Liste gerade zeigt – gesetzte Filter und die Suche werden also übernommen. Wer stattdessen einzelne Zeilen ankreuzt, findet unter der Auswahl *Auswahl exportieren*.
+
+| Format | gedacht für | Besonderheit |
+|---|---|---|
+| Excel (.xlsx) | Buchhaltung, Steuerberater | Beträge sind echte Zahlen, lassen sich also summieren |
+| Markdown (.md) | Protokolle, Notizen, E-Mails | deutsche Schreibweise (`1.234,50`) |
+| XML (.xml) | Weiterverarbeitung, Archiv | Punkt als Dezimaltrenner (`1234.50`), Sonderzeichen maskiert |
+
+Der Bescheinigungs-Export enthält neben Nummer, Betrag und Datum auch die Anschrift des Spenders, den Förderungszweck und den Status; der Spender-Export die vollständigen Stammdaten. Welche Spalten mitgehen, steht in [app/Exports/](app/Exports/).
 
 ---
 
