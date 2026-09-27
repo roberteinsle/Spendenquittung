@@ -7,14 +7,15 @@ use App\Enums\Anrede;
 use App\Enums\SpendeStatus;
 use App\Enums\VersandErgebnis;
 use App\Enums\VersandKanal;
+use App\Filament\Resources\Spendes\Pages\ListSpendes;
 use App\Jobs\VersendeZuwendungsbestaetigung;
 use App\Mail\ZuwendungsbestaetigungMail;
 use App\Models\Foerderungszweck;
 use App\Models\Setting;
 use App\Models\Spende;
 use App\Models\Spender;
-use App\Filament\Resources\Spendes\Pages\ListSpendes;
 use App\Models\User;
+use App\Services\VersandprotokollService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Mail;
@@ -85,7 +86,7 @@ class EmailVersandTest extends TestCase
         $user   = User::factory()->create();
 
         (new VersendeZuwendungsbestaetigung($spende, $user->id))
-            ->handle(app(\App\Services\VersandprotokollService::class));
+            ->handle(app(VersandprotokollService::class));
 
         Mail::assertSent(ZuwendungsbestaetigungMail::class, function (ZuwendungsbestaetigungMail $mail) use ($spende) {
             return $mail->hasTo('max@example.test')
@@ -100,7 +101,7 @@ class EmailVersandTest extends TestCase
         $user   = User::factory()->create();
 
         (new VersendeZuwendungsbestaetigung($spende, $user->id))
-            ->handle(app(\App\Services\VersandprotokollService::class));
+            ->handle(app(VersandprotokollService::class));
 
         $protokoll = $spende->versandprotokolle()->sole();
         $this->assertSame(VersandKanal::Email, $protokoll->kanal);
@@ -120,7 +121,7 @@ class EmailVersandTest extends TestCase
 
         try {
             (new VersendeZuwendungsbestaetigung($spende))
-                ->handle(app(\App\Services\VersandprotokollService::class));
+                ->handle(app(VersandprotokollService::class));
         } finally {
             Mail::assertNothingSent();
             $this->assertSame(SpendeStatus::Erstellt, $spende->refresh()->status);
@@ -136,7 +137,7 @@ class EmailVersandTest extends TestCase
 
         try {
             (new VersendeZuwendungsbestaetigung($spende))
-                ->handle(app(\App\Services\VersandprotokollService::class));
+                ->handle(app(VersandprotokollService::class));
         } finally {
             Mail::assertNothingSent();
         }
@@ -163,8 +164,8 @@ class EmailVersandTest extends TestCase
     {
         $spende = $this->spendeAnlegen();
 
-        $mail     = new ZuwendungsbestaetigungMail($spende);
-        $envelope = $mail->envelope();
+        $mail      = new ZuwendungsbestaetigungMail($spende);
+        $envelope  = $mail->envelope();
         $gerendert = $mail->render();
 
         $this->assertSame("Ihre Zuwendungsbestätigung Nr. {$spende->bescheinigungsnummer}", $envelope->subject);
