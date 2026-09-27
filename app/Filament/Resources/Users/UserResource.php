@@ -20,6 +20,8 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
+    protected static ?string $slug = 'benutzer';
+
     protected static ?string $navigationLabel = 'Benutzer';
 
     protected static ?string $modelLabel = 'Benutzer';

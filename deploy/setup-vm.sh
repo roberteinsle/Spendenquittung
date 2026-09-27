@@ -44,6 +44,7 @@ services:
     environment:
       APP_ENV: production
       APP_NAME: ${APP_NAME:-Spendenquittung}
+      APP_LOCALE: ${APP_LOCALE:-de}
       APP_KEY: ${APP_KEY}
       APP_URL: ${APP_URL}
       APP_DEBUG: "false"
@@ -84,6 +85,7 @@ services:
     environment:
       APP_ENV: production
       APP_NAME: ${APP_NAME:-Spendenquittung}
+      APP_LOCALE: ${APP_LOCALE:-de}
       APP_KEY: ${APP_KEY}
       APP_URL: ${APP_URL}
       APP_DEBUG: "false"

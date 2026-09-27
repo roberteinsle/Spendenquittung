@@ -22,6 +22,8 @@ class SpenderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
+    protected static ?string $slug = 'spender';
+
     protected static ?string $navigationLabel = 'Spender';
 
     protected static ?string $modelLabel = 'Spender';

@@ -22,6 +22,8 @@ class FoerderungszweckResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
+    protected static ?string $slug = 'foerderungszwecke';
+
     protected static ?string $navigationLabel = 'Förderungszwecke';
 
     protected static ?string $modelLabel = 'Förderungszweck';

@@ -69,14 +69,14 @@ class PanelSeitenTest extends TestCase
         return [
             'Dashboard'                => ['filament.admin.pages.dashboard'],
             'Einstellungen'            => ['filament.admin.pages.einstellungen'],
-            'Bescheinigungen'          => ['filament.admin.resources.spendes.index'],
-            'Bescheinigung anlegen'    => ['filament.admin.resources.spendes.create'],
-            'Spender'                  => ['filament.admin.resources.spenders.index'],
-            'Spender anlegen'          => ['filament.admin.resources.spenders.create'],
-            'Förderungszwecke'         => ['filament.admin.resources.foerderungszwecks.index'],
-            'Förderungszweck anlegen'  => ['filament.admin.resources.foerderungszwecks.create'],
-            'Benutzer'                 => ['filament.admin.resources.users.index'],
-            'Benutzer anlegen'         => ['filament.admin.resources.users.create'],
+            'Bescheinigungen'          => ['filament.admin.resources.bescheinigungen.index'],
+            'Bescheinigung anlegen'    => ['filament.admin.resources.bescheinigungen.create'],
+            'Spender'                  => ['filament.admin.resources.spender.index'],
+            'Spender anlegen'          => ['filament.admin.resources.spender.create'],
+            'Förderungszwecke'         => ['filament.admin.resources.foerderungszwecke.index'],
+            'Förderungszweck anlegen'  => ['filament.admin.resources.foerderungszwecke.create'],
+            'Benutzer'                 => ['filament.admin.resources.benutzer.index'],
+            'Benutzer anlegen'         => ['filament.admin.resources.benutzer.create'],
         ];
     }
 
@@ -96,21 +96,21 @@ class PanelSeitenTest extends TestCase
     public function test_bescheinigung_bearbeiten_mit_versandprotokoll_rendert(): void
     {
         $this->actingAs($this->verwalter())
-            ->get(route('filament.admin.resources.spendes.edit', $this->spende))
+            ->get(route('filament.admin.resources.bescheinigungen.edit', $this->spende))
             ->assertOk();
     }
 
     public function test_spender_bearbeiten_rendert(): void
     {
         $this->actingAs($this->verwalter())
-            ->get(route('filament.admin.resources.spenders.edit', $this->spende->spender))
+            ->get(route('filament.admin.resources.spender.edit', $this->spende->spender))
             ->assertOk();
     }
 
     public function test_foerderungszweck_bearbeiten_rendert(): void
     {
         $this->actingAs($this->verwalter())
-            ->get(route('filament.admin.resources.foerderungszwecks.edit', $this->spende->foerderungszweck))
+            ->get(route('filament.admin.resources.foerderungszwecke.edit', $this->spende->foerderungszweck))
             ->assertOk();
     }
 }

@@ -180,6 +180,22 @@ Alle drei laufen in einer Subshell, wechseln das Arbeitsverzeichnis also nicht d
 
 ---
 
+## Sprache
+
+Die Oberfläche läuft auf Deutsch; `APP_LOCALE` ist in `config/app.php` auf `de` vorbelegt und wird von den Compose-Dateien zusätzlich durchgereicht. Filament bringt die Übersetzungen selbst mit.
+
+Drei Formulierungen weichen bewusst ab und liegen als Override in [lang/vendor/](lang/vendor/):
+
+| Stelle | Filament | hier |
+|---|---|---|
+| Breadcrumb der Liste | Übersicht | Liste |
+| Suchfeld | Suche | Suchen |
+| Anlegen-Knopf | Erstellen | Neu |
+
+Laravel mischt diese Dateien über die des Pakets, es sind also bewusst nur die geänderten Zeilen enthalten.
+
+---
+
 ## Anpassung an die eigene Organisation
 
 ### Stiftungs-/Vereinsdaten

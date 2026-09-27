@@ -48,14 +48,14 @@ class BerechtigungTest extends TestCase
     public function test_mitarbeiter_kommt_nicht_in_die_benutzerverwaltung(): void
     {
         $this->actingAs($this->mitarbeiter())
-            ->get(route('filament.admin.resources.users.index'))
+            ->get(route('filament.admin.resources.benutzer.index'))
             ->assertForbidden();
     }
 
     public function test_mitarbeiter_kann_kein_konto_anlegen(): void
     {
         $this->actingAs($this->mitarbeiter())
-            ->get(route('filament.admin.resources.users.create'))
+            ->get(route('filament.admin.resources.benutzer.create'))
             ->assertForbidden();
     }
 
@@ -79,9 +79,9 @@ class BerechtigungTest extends TestCase
 
         foreach ([
             'filament.admin.pages.dashboard',
-            'filament.admin.resources.spendes.index',
-            'filament.admin.resources.spenders.index',
-            'filament.admin.resources.foerderungszwecks.index',
+            'filament.admin.resources.bescheinigungen.index',
+            'filament.admin.resources.spender.index',
+            'filament.admin.resources.foerderungszwecke.index',
         ] as $route) {
             $this->actingAs($nutzer)->get(route($route))->assertOk();
         }

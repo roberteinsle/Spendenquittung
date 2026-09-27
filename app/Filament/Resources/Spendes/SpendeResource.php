@@ -23,6 +23,8 @@ class SpendeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
+    protected static ?string $slug = 'bescheinigungen';
+
     protected static ?string $navigationLabel = 'Bescheinigungen';
 
     protected static ?string $modelLabel = 'Bescheinigung';
