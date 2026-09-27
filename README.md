@@ -138,11 +138,29 @@ deploy() (
     docker image prune -f >/dev/null
     docker compose ps --format 'table {{.Service}}\t{{.Status}}'
 )
+
+artisan() (
+    cd /opt/spendenquittung
+    docker compose exec app php artisan "$@"
+)
+
+logs() (
+    cd /opt/spendenquittung
+    docker compose logs -f --tail=100 "$@"
+)
 BASHRC
 source ~/.bashrc
 ```
 
-Sie läuft in einer Subshell, wechselt das Arbeitsverzeichnis also nicht dauerhaft, bricht beim ersten Fehler ab und räumt alte Images weg – sonst läuft die Platte einer kleinen VM mit der Zeit voll.
+Derselbe Block legt zwei weitere Abkürzungen an, die aus **jedem** Verzeichnis funktionieren – `docker compose` selbst findet seine Konfiguration sonst nur im Projektverzeichnis:
+
+```bash
+artisan db:seed --force   # artisan im App-Container
+artisan tinker
+logs worker               # Logs verfolgen, z. B. beim E-Mail-Versand
+```
+
+Alle drei laufen in einer Subshell, wechseln das Arbeitsverzeichnis also nicht dauerhaft. `deploy` bricht zusätzlich beim ersten Fehler ab und räumt alte Images weg – sonst läuft die Platte einer kleinen VM mit der Zeit voll.
 
 ---
 

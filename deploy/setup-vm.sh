@@ -149,6 +149,20 @@ deploy() (
     docker image prune -f >/dev/null
     docker compose ps --format 'table {{.Service}}\t{{.Status}}'
 )
+
+# artisan im App-Container, aus jedem Verzeichnis heraus.
+#   artisan db:seed --force
+#   artisan tinker
+artisan() (
+    cd /opt/spendenquittung
+    docker compose exec app php artisan "$@"
+)
+
+# Logs, z. B.: logs worker
+logs() (
+    cd /opt/spendenquittung
+    docker compose logs -f --tail=100 "$@"
+)
 BASHRC
 fi
 
