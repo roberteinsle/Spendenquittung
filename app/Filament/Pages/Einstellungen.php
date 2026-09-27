@@ -9,6 +9,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -43,6 +44,7 @@ class Einstellungen extends Page implements HasForms
             'stiftung_finanzamt', 'stiftung_steuernummer', 'stiftung_freistellung_datum', 'stiftung_veranlagungszeitraum',
             'unterzeichner_name', 'unterzeichner_titel', 'ausstellungsort',
             'unterschrift_pfad', 'logo_pfad', 'herzfigur_pfad',
+            'mail_betreff', 'mail_text', 'mail_text_du',
         ];
 
         $formData = [];
@@ -150,6 +152,24 @@ class Einstellungen extends Page implements HasForms
                             ->directory('unterschriften')
                             ->acceptedFileTypes(['image/png', 'image/jpeg'])
                             ->helperText('PNG mit transparentem Hintergrund empfohlen'),
+                    ]),
+
+                Section::make('E-Mail-Versand')
+                    ->description('Platzhalter: :nummer, :betrag, :datum, :jahr, :zweck. Anrede und Grußformel werden automatisch ergänzt.')
+                    ->schema([
+                        TextInput::make('mail_betreff')
+                            ->label('Betreff')
+                            ->placeholder('Ihre Zuwendungsbestätigung Nr. :nummer'),
+
+                        Textarea::make('mail_text')
+                            ->label('Text (Sie-Form)')
+                            ->rows(6)
+                            ->helperText('Wird für alle Spender verwendet, die nicht geduzt werden.'),
+
+                        Textarea::make('mail_text_du')
+                            ->label('Text (Du-Form)')
+                            ->rows(6)
+                            ->helperText('Wird für Spender mit gesetztem Haken "Duzen" verwendet.'),
                     ]),
 
                 Section::make('Briefkopf-Assets')

@@ -18,6 +18,7 @@ class EditSpende extends EditRecord
         return [
             BescheinigungActions::pdfErzeugen(),
             BescheinigungActions::pdfOeffnen(),
+            BescheinigungActions::perEmailSenden(),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),

@@ -98,6 +98,35 @@ class Spender extends Model
     }
 
     /**
+     * Salutation for letters and e-mails, honouring Anrede and the `duzen` flag.
+     */
+    public function getBriefanredeAttribute(): string
+    {
+        $vorname  = trim((string) $this->vorname);
+        $nachname = trim((string) $this->nachname);
+
+        if ($this->duzen) {
+            return match ($this->anrede) {
+                Anrede::Herrn    => $vorname ? "Lieber {$vorname}" : 'Hallo',
+                Anrede::Frau,
+                Anrede::Eheleute => $vorname ? "Liebe {$vorname}" : 'Hallo',
+                default          => $vorname ? "Hallo {$vorname}" : 'Hallo',
+            };
+        }
+
+        return match ($this->anrede) {
+            Anrede::Herrn    => "Sehr geehrter Herr {$nachname}",
+            Anrede::Frau     => "Sehr geehrte Frau {$nachname}",
+            Anrede::Eheleute => "Sehr geehrte Eheleute {$nachname}",
+            Anrede::Firma    => 'Sehr geehrte Damen und Herren',
+            // Without a known Anrede the gender is unknown, so avoid Herr/Frau.
+            default          => $this->firma && ! $nachname
+                ? 'Sehr geehrte Damen und Herren'
+                : trim("Guten Tag {$vorname} {$nachname}"),
+        };
+    }
+
+    /**
      * Normalised key for donor matching: lowercase nachname + normalised plz.
      */
     public function getNormalisierterMatchkeyAttribute(): string

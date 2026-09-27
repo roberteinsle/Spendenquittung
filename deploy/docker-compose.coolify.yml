@@ -15,11 +15,19 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
       TAILSCALE_ONLY: ${TAILSCALE_ONLY:-false}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
       AUTORUN_ENABLED: "true"
       AUTORUN_LARAVEL_MIGRATION: "true"
+      # Legt beim ersten Start Benutzer, Foerderungszwecke und Einstellungen an.
+      # Die Seeder sind idempotent, ein Neustart richtet also keinen Schaden an.
+      AUTORUN_LARAVEL_MIGRATION_SEED: "true"
       LOG_CHANNEL: stderr
     volumes:
       - app-storage:/var/www/html/storage
@@ -53,6 +61,11 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       GOTENBERG_URL: http://gotenberg:3000
       TAILSCALE_ONLY: ${TAILSCALE_ONLY:-false}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database

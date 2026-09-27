@@ -78,6 +78,11 @@ class PanelSeitenTest extends TestCase
             ->assertOk();
     }
 
+    public function test_startseite_leitet_ins_panel(): void
+    {
+        $this->get('/')->assertRedirect('/admin');
+    }
+
     public function test_bescheinigung_bearbeiten_mit_versandprotokoll_rendert(): void
     {
         $this->actingAs(User::factory()->create())

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Actions;
 
+use App\Jobs\VersendeZuwendungsbestaetigung;
 use App\Models\Spende;
 use App\Services\PdfGeneratorService;
 use Filament\Actions\Action;
@@ -53,6 +54,81 @@ class BescheinigungActions
             ->url(fn (Spende $record) => route('bescheinigung.pdf', $record))
             ->openUrlInNewTab()
             ->visible(fn (Spende $record) => $record->pdfVorhanden());
+    }
+
+    public static function perEmailSenden(): Action
+    {
+        return Action::make('email_senden')
+            ->label('Per E-Mail senden')
+            ->icon('heroicon-o-envelope')
+            ->color('gray')
+            ->visible(fn (Spende $record) => $record->pdfVorhanden())
+            ->disabled(fn (Spende $record) => blank($record->spender?->email))
+            ->tooltip(fn (Spende $record) => blank($record->spender?->email)
+                ? 'Für diesen Spender ist keine E-Mail-Adresse hinterlegt.'
+                : null
+            )
+            ->requiresConfirmation()
+            ->modalHeading('Zuwendungsbestätigung per E-Mail senden?')
+            ->modalDescription(fn (Spende $record) => "Nr. {$record->bescheinigungsnummer} geht als PDF-Anhang an {$record->spender?->email}.")
+            ->modalSubmitActionLabel('Senden')
+            ->action(function (Spende $record) {
+                VersendeZuwendungsbestaetigung::dispatch($record, auth()->id());
+
+                Notification::make()
+                    ->title('E-Mail wird versendet')
+                    ->body("Das Ergebnis erscheint im Versandprotokoll von Nr. {$record->bescheinigungsnummer}.")
+                    ->success()
+                    ->send();
+            });
+    }
+
+    public static function perEmailSendenBulk(): BulkAction
+    {
+        return BulkAction::make('emails_senden')
+            ->label('Per E-Mail senden')
+            ->icon('heroicon-o-envelope')
+            ->requiresConfirmation()
+            ->modalHeading('Ausgewählte Bescheinigungen per E-Mail senden?')
+            ->modalDescription('Übersprungen werden Bescheinigungen ohne PDF und Spender ohne E-Mail-Adresse.')
+            ->modalSubmitActionLabel('Senden')
+            ->deselectRecordsAfterCompletion()
+            ->action(function (Collection $records) {
+                $versendet   = 0;
+                $ohnePdf     = 0;
+                $ohneAdresse = 0;
+
+                foreach ($records as $record) {
+                    if (! $record->pdfVorhanden()) {
+                        $ohnePdf++;
+
+                        continue;
+                    }
+
+                    if (blank($record->spender?->email)) {
+                        $ohneAdresse++;
+
+                        continue;
+                    }
+
+                    VersendeZuwendungsbestaetigung::dispatch($record, auth()->id());
+                    $versendet++;
+                }
+
+                $hinweise = [];
+                if ($ohnePdf > 0) {
+                    $hinweise[] = "{$ohnePdf} ohne PDF übersprungen";
+                }
+                if ($ohneAdresse > 0) {
+                    $hinweise[] = "{$ohneAdresse} ohne E-Mail-Adresse übersprungen";
+                }
+
+                Notification::make()
+                    ->title("{$versendet} E-Mail(s) in Versand gegeben")
+                    ->body($hinweise === [] ? null : implode(', ', $hinweise))
+                    ->status($versendet > 0 ? 'success' : 'warning')
+                    ->send();
+            });
     }
 
     public static function pdfsErzeugenBulk(): BulkAction

@@ -15,7 +15,8 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - **Bescheinigungsnummern** – werden automatisch vergeben (Format `YYxxxx`, z.B. `264711`)
 - **Betrag in Worten** – wird automatisch auf Deutsch ausgeschrieben
 - **Mehrere Förderungszwecke** – konfigurierbar mit vollem juristischen Text je Zweck
-- **Versandprotokoll** – jeder Zugriff auf ein PDF wird mit Benutzer und Zeitpunkt protokolliert
+- **E-Mail-Versand** – Bescheinigung als PDF-Anhang, mit passender Anrede (Sie oder Du) und frei konfigurierbarem Text
+- **Versandprotokoll** – jeder Zugriff auf ein PDF und jeder E-Mail-Versand wird mit Benutzer, Zeitpunkt und Ergebnis protokolliert
 
 ---
 
@@ -107,10 +108,15 @@ Alternativ kann Coolify mit einem GitHub PAT (`read:packages`) als private Regis
 | `DB_USERNAME` | Datenbankbenutzer |
 | `DB_PASSWORD` | Sicheres Passwort |
 | `APP_TAG` | Image-Tag, Standard: `latest` |
+| `TAILSCALE_ONLY` | `true` beschränkt den Zugriff auf das Tailscale-Netz |
+| `MAIL_MAILER` | `smtp` für echten Versand; ohne Angabe landen E-Mails nur im Log |
+| `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD` | SMTP-Zugang |
 
 4. Deployment starten
 
-Beim ersten Start werden Datenbankmigrationen und das Seeding automatisch ausgeführt.
+Beim ersten Start werden Migrationen und Seeder automatisch ausgeführt, sofern `AUTORUN_LARAVEL_MIGRATION_SEED=true` gesetzt ist (in den mitgelieferten Compose-Dateien ist das der Fall). Die Seeder legen die Benutzerkonten, die Förderungszwecke und die Grundeinstellungen an – **ohne sie gibt es kein Konto zum Anmelden**. Sie sind idempotent, ein Neustart überschreibt also nichts.
+
+> Die angelegten Konten lauten `admin@example.com`, `user1@example.com` und `user2@example.com`, jeweils mit dem Passwort `password`. **Vor dem ersten echten Einsatz ändern.**
 
 ---
 
@@ -140,12 +146,19 @@ Unter **Förderungszwecke** können beliebig viele Zwecke mit dem vollständigen
 
 ### Bescheinigungen erzeugen und ausgeben
 
-Unter **Bescheinigungen** stehen je Eintrag zwei Aktionen bereit:
+Unter **Bescheinigungen** stehen je Eintrag drei Aktionen bereit:
 
 - **PDF erzeugen** – rendert die Bescheinigung über Gotenberg und legt sie ab. Über die Mehrfachauswahl lassen sich auch ganze Stapel auf einmal erzeugen.
 - **PDF öffnen** – liefert das fertige PDF im Browser aus.
+- **Per E-Mail senden** – schickt die Bescheinigung als PDF-Anhang an den Spender. Nur verfügbar, wenn ein PDF existiert; ohne hinterlegte E-Mail-Adresse ist die Aktion deaktiviert. Auch als Massenaktion, die Bescheinigungen ohne PDF oder ohne Adresse überspringt.
 
 Der Status einer Bescheinigung wandert dabei von *Erfasst* über *PDF erstellt* zu *Gedruckt*; ein erneutes Erzeugen setzt einen bereits erreichten Status nie zurück. Jeder Abruf eines PDFs landet im **Versandprotokoll** unterhalb des Bearbeiten-Formulars.
+
+> Der E-Mail-Versand läuft über die Queue. Es muss also ein Worker laufen (`php artisan queue:work`; im Docker-Compose erledigt das der `worker`-Container). Ohne Worker bleiben die E-Mails liegen und es erscheint kein Protokolleintrag.
+
+Den **Betreff und den Text** der E-Mail legst du unter *Einstellungen → E-Mail-Versand* fest, getrennt für die Sie- und die Du-Form (siehe Haken „Duzen“ beim Spender). Anrede und Grußformel ergänzt die App automatisch. Verfügbare Platzhalter: `:nummer`, `:betrag`, `:datum`, `:jahr`, `:zweck`.
+
+Scheitert ein Versand, versucht es die App zweimal erneut (nach einer und nach fünf Minuten). Erst danach erscheint ein Fehlereintrag mit der Meldung im Versandprotokoll.
 
 Die erzeugten PDFs enthalten personenbezogene Daten und liegen deshalb auf einer **privaten** Storage-Disk (`storage/app/private/bescheinigungen`). Sie sind ausschließlich über die angemeldete Route `/bescheinigungen/{id}/pdf` erreichbar, nie über einen öffentlichen Link. Die Disk lässt sich per `PDF_DISK` umstellen.
 

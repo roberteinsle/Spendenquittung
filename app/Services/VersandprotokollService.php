@@ -12,6 +12,9 @@ class VersandprotokollService
 {
     /**
      * Record one delivery attempt and advance the Spende status accordingly.
+     *
+     * @param int|null $benutzerId Who triggered it. Queued jobs run without an
+     *                             authenticated user, so they pass this in.
      */
     public function protokolliere(
         Spende $spende,
@@ -19,6 +22,7 @@ class VersandprotokollService
         VersandErgebnis $ergebnis = VersandErgebnis::Erfolg,
         ?string $empfaenger = null,
         ?string $nachricht = null,
+        ?int $benutzerId = null,
     ): Versandprotokoll {
         $protokoll = $spende->versandprotokolle()->create([
             'kanal'           => $kanal,
@@ -26,7 +30,7 @@ class VersandprotokollService
             'empfaenger'      => $empfaenger,
             'ergebnis'        => $ergebnis,
             'nachricht'       => $nachricht,
-            'ausgefuehrt_von' => auth()->id(),
+            'ausgefuehrt_von' => $benutzerId ?? auth()->id(),
         ]);
 
         if ($ergebnis === VersandErgebnis::Erfolg) {
