@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Spenders\Tables;
 
 use App\Enums\Anrede;
+use App\Exports\SpenderExport;
+use App\Filament\Actions\ExportActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -83,7 +85,11 @@ class SpendersTable
             ->recordActions([
                 EditAction::make(),
             ])
+            ->headerActions([
+                ExportActions::tabelle(SpenderExport::class, 'Spender'),
+            ])
             ->toolbarActions([
+                ExportActions::auswahl(SpenderExport::class, 'Spender'),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),

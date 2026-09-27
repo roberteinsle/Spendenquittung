@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Spendes\Tables;
 
 use App\Enums\SpendeStatus;
+use App\Exports\SpendenExport;
 use App\Filament\Actions\BescheinigungActions;
+use App\Filament\Actions\ExportActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -91,9 +93,13 @@ class SpendesTable
                 BescheinigungActions::pdfErzeugen(),
                 EditAction::make(),
             ])
+            ->headerActions([
+                ExportActions::tabelle(SpendenExport::class, 'Bescheinigungen'),
+            ])
             ->toolbarActions([
                 BescheinigungActions::pdfsErzeugenBulk(),
                 BescheinigungActions::perEmailSendenBulk(),
+                ExportActions::auswahl(SpendenExport::class, 'Bescheinigungen'),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
