@@ -11,8 +11,9 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'login_pin'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -39,6 +40,20 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'login_pin' => 'hashed',
         ];
+    }
+
+    /**
+     * Users without a PIN sign in by clicking their name.
+     */
+    public function brauchtPin(): bool
+    {
+        return filled($this->login_pin);
+    }
+
+    public function pinStimmt(string $pin): bool
+    {
+        return $this->brauchtPin() && Hash::check($pin, $this->login_pin);
     }
 }

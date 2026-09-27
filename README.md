@@ -8,6 +8,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 
 ## Was kann die App?
 
+- **Anmeldung per Namensauswahl** – Mitarbeiter klicken auf ihren Namen, ausgewählte Konten sind zusätzlich mit einer PIN geschützt
 - **Spenderdaten verwalten** – Stammdaten mit automatischer Spendernummer, Anrede, Adresse, E-Mail
 - **Spenden erfassen** – Betrag, Datum, Förderungszweck, Ankreuzfeld (Vermögensstock / unmittelbare Verwendung)
 - **Farbiges PDF erzeugen** – A4-Zuwendungsbestätigung mit Logo, Unterschrift und individuellem Förderungstext, konform zum BMF-Muster
@@ -72,12 +73,7 @@ php artisan serve
 
 Die App ist dann unter `http://localhost:8000` erreichbar.
 
-**Standard-Login nach dem Seeding:**
-- user1@example.com / password
-- user2@example.com / password
-- admin@example.com / password
-
-> Passwörter unbedingt vor dem ersten produktiven Einsatz ändern.
+**Nach dem Seeding** existiert ein einziges Konto namens *Administrator*. Auf der Anmeldeseite genügt ein Klick darauf – ein Passwort gibt es nicht (siehe [Anmeldung](#anmeldung)).
 
 ---
 
@@ -116,7 +112,7 @@ Alternativ kann Coolify mit einem GitHub PAT (`read:packages`) als private Regis
 
 Beim ersten Start werden Migrationen und Seeder automatisch ausgeführt, sofern `AUTORUN_LARAVEL_MIGRATION_SEED=true` gesetzt ist (in den mitgelieferten Compose-Dateien ist das der Fall). Die Seeder legen die Benutzerkonten, die Förderungszwecke und die Grundeinstellungen an – **ohne sie gibt es kein Konto zum Anmelden**. Sie sind idempotent, ein Neustart überschreibt also nichts.
 
-> Die angelegten Konten lauten `admin@example.com`, `user1@example.com` und `user2@example.com`, jeweils mit dem Passwort `password`. **Vor dem ersten echten Einsatz ändern.**
+> Angelegt wird dabei ein einziges Konto namens *Administrator*, und nur solange überhaupt kein Benutzer existiert. Ein gelöschtes Konto kommt beim nächsten Start also nicht zurück.
 
 ---
 
@@ -139,6 +135,17 @@ Ebenfalls unter **Einstellungen**:
 - **Logo** – PNG oder JPG, mind. 300 dpi bei Zielgröße
 - **Unterschrift** – PNG mit transparentem Hintergrund empfohlen
 - Optional: Herzfigur / Signet (je nach Gestaltung der Vorlage)
+
+### Anmeldung
+
+Die App ist für den Betrieb in einem privaten Netz gedacht und hat deshalb keine Passwörter. Die Anmeldeseite listet alle Benutzer namentlich auf:
+
+- **Ohne PIN** – ein Klick auf den Namen meldet an
+- **Mit PIN** – der Name trägt ein Schloss-Symbol und fragt eine PIN ab (fünf Fehlversuche pro Minute, danach gesperrt)
+
+Benutzer werden unter **Einstellungen → Benutzer** angelegt und bearbeitet. Das PIN-Feld bleibt beim Bearbeiten leer; leer speichern behält die bestehende PIN.
+
+> Diese Bequemlichkeit hat einen Preis: Wer Zugang zum Netz hat, kann sich als beliebiger Mitarbeiter ohne PIN anmelden. Damit ist die Zuordnung im Versandprotokoll („wer hat die Bescheinigung verschickt") nur so verlässlich wie der Netzzugang. Wer das nicht möchte, vergibt für jedes Konto eine PIN.
 
 ### Förderungszwecke
 
