@@ -9,6 +9,8 @@ use App\Services\BetragInWortenService;
 
 class SpendeObserver
 {
+    use SchreibtProtokoll;
+
     public function creating(Spende $spende): void
     {
         if (empty($spende->bescheinigungsnummer)) {

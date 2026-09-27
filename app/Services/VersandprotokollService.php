@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ProtokollAktion;
 use App\Enums\SpendeStatus;
 use App\Enums\VersandErgebnis;
 use App\Enums\VersandKanal;
@@ -37,6 +38,15 @@ class VersandprotokollService
             $this->setzeStatus($spende, $this->statusFuer($kanal));
         }
 
+        // Zusätzlich in den übergreifenden Prüfpfad. Das Versandprotokoll bleibt
+        // die Detailsicht je Bescheinigung, das Protokoll die Gesamtschau.
+        app(ProtokollService::class)->schreibe(
+            aktion: $this->protokollAktion($kanal, $ergebnis),
+            betrifft: $spende,
+            beschreibung: $empfaenger ? "An {$empfaenger}" : $nachricht,
+            benutzerId: $benutzerId,
+        );
+
         return $protokoll;
     }
 
@@ -50,6 +60,21 @@ class VersandprotokollService
         }
 
         $spende->update(['status' => $neu]);
+    }
+
+    private function protokollAktion(VersandKanal $kanal, VersandErgebnis $ergebnis): ProtokollAktion
+    {
+        if ($kanal === VersandKanal::Email) {
+            return $ergebnis === VersandErgebnis::Erfolg
+                ? ProtokollAktion::EmailVersendet
+                : ProtokollAktion::EmailFehlgeschlagen;
+        }
+
+        return match ($kanal) {
+            VersandKanal::Druck => ProtokollAktion::PdfGeoeffnet,
+            VersandKanal::Post => ProtokollAktion::PostVersendet,
+            default => ProtokollAktion::PdfGeoeffnet,
+        };
     }
 
     private function statusFuer(VersandKanal $kanal): SpendeStatus

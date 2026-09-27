@@ -20,6 +20,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - **E-Mail-Versand** – Bescheinigung als PDF-Anhang, mit passender Anrede (Sie oder Du) und frei konfigurierbarem Text
 - **Dashboard** – letzte Bescheinigungen und Spender, dazu höchste Einzelspende und treuester Spender
 - **Export** – Spender- und Bescheinigungslisten als Excel, Markdown oder XML, jeweils passend zu Filter, Suche oder Auswahl
+- **Protokoll** – wer hat wann welchen Datensatz angelegt, geändert oder gelöscht, wann wurde ein PDF erzeugt, geöffnet oder verschickt; mit Filtern, Suche und Export
 - **Versandprotokoll** – jeder Zugriff auf ein PDF und jeder E-Mail-Versand wird mit Benutzer, Zeitpunkt und Ergebnis protokolliert
 
 ---
@@ -116,6 +117,29 @@ Alternativ kann Coolify mit einem GitHub PAT (`read:packages`) als private Regis
 Beim ersten Start werden Migrationen und Seeder automatisch ausgeführt, sofern `AUTORUN_LARAVEL_MIGRATION_SEED=true` gesetzt ist (in den mitgelieferten Compose-Dateien ist das der Fall). Die Seeder legen die Benutzerkonten, die Förderungszwecke und die Grundeinstellungen an – **ohne sie gibt es kein Konto zum Anmelden**. Sie sind idempotent, ein Neustart überschreibt also nichts.
 
 > Angelegt wird dabei ein einziges Konto namens *Administrator*, und nur solange überhaupt kein Benutzer existiert. Ein gelöschtes Konto kommt beim nächsten Start also nicht zurück.
+
+---
+
+## Protokoll
+
+Unter **Einstellungen → Protokoll** steht der Prüfpfad: jeder Eintrag nennt Zeitpunkt, Benutzer, Aktion, Art und den betroffenen Datensatz.
+
+Festgehalten werden:
+
+- **Spender und Bescheinigungen**: angelegt, bearbeitet, gelöscht, wiederhergestellt. Bei Änderungen zeigt *Details* alten und neuen Wert je Feld.
+- **PDF**: erzeugt, geöffnet
+- **Versand**: E-Mail versendet oder fehlgeschlagen, per Post
+
+Filtern lässt sich nach Aktion, Benutzer, Art und Zeitraum; die Volltextsuche greift auf Benutzer, betroffenen Datensatz und Details. Der Export kennt dieselben drei Formate wie die übrigen Listen.
+
+Zwei Festlegungen:
+
+- Das Protokoll ist **nicht änderbar** – kein Anlegen, kein Bearbeiten, kein Löschen über die Oberfläche.
+- Es ist nur für Konten mit Verwaltungsrecht sichtbar.
+
+Der Benutzername wird beim Schreiben **mitgespeichert**. Wird ein Konto später gelöscht, steht im Protokoll weiterhin, wer gehandelt hat.
+
+> Das **Versandprotokoll** unter der einzelnen Bescheinigung bleibt daneben bestehen: es ist die Detailsicht je Beleg mit Kanal, Empfänger und Ergebnis, während das Protokoll die Gesamtschau über alle Datensätze liefert.
 
 ---
 

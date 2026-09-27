@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ProtokollAktion;
 use App\Enums\SpendeStatus;
 use App\Models\Setting;
 use App\Models\Spende;
@@ -36,6 +37,11 @@ class PdfGeneratorService
         // Regenerating a receipt that was already printed or sent must not
         // reset it to "PDF erstellt".
         $this->versandprotokoll->setzeStatus($spende, SpendeStatus::Erstellt);
+
+        app(ProtokollService::class)->schreibe(
+            aktion: ProtokollAktion::PdfErzeugt,
+            betrifft: $spende,
+        );
 
         return $pfad;
     }

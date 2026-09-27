@@ -7,6 +7,8 @@ use App\Services\SpendernummerService;
 
 class SpenderObserver
 {
+    use SchreibtProtokoll;
+
     public function creating(Spender $spender): void
     {
         if (empty($spender->spendernummer)) {

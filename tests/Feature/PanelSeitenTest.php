@@ -76,6 +76,7 @@ class PanelSeitenTest extends TestCase
             'Förderungszwecke'         => ['filament.admin.resources.foerderungszwecke.index'],
             'Förderungszweck anlegen'  => ['filament.admin.resources.foerderungszwecke.create'],
             'Benutzer'                 => ['filament.admin.resources.benutzer.index'],
+            'Protokoll'                => ['filament.admin.resources.protokoll.index'],
             'Benutzer anlegen'         => ['filament.admin.resources.benutzer.create'],
         ];
     }
