@@ -38,6 +38,16 @@ class SettingsSeeder extends Seeder
             'unterzeichner_name'         => 'Jasmin Einsle',
             'unterzeichner_titel'        => 'Vorstand',
             'ausstellungsort'            => 'Hamburg',
+            // E-Mail-Versand (Platzhalter: :nummer :betrag :datum :jahr :zweck)
+            'mail_betreff'               => 'Ihre Zuwendungsbestätigung Nr. :nummer',
+            'mail_text'                  => "vielen Dank für Ihre Spende vom :datum über :betrag.\n\n"
+                . "Im Anhang finden Sie Ihre Zuwendungsbestätigung Nr. :nummer als PDF-Datei. "
+                . "Bitte bewahren Sie sie für Ihre Steuerunterlagen auf.\n\n"
+                . 'Über Ihre Unterstützung freuen wir uns sehr.',
+            'mail_text_du'               => "vielen Dank für Deine Spende vom :datum über :betrag.\n\n"
+                . "Im Anhang findest Du Deine Zuwendungsbestätigung Nr. :nummer als PDF-Datei. "
+                . "Bitte bewahre sie für Deine Steuerunterlagen auf.\n\n"
+                . 'Über Deine Unterstützung freuen wir uns sehr.',
         ];
 
         foreach ($defaults as $key => $value) {

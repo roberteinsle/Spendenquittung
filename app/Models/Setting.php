@@ -15,18 +15,25 @@ class Setting extends Model
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        $setting = Cache::remember("setting_{$key}", 3600, function () use ($key) {
-            return static::find($key);
+        // Cache the plain value rather than the model: a serialised Eloquent
+        // object in the cache turns into an incomplete class as soon as the
+        // class definition changes, e.g. after a deploy.
+        $cached = Cache::remember("setting_{$key}", 3600, function () use ($key) {
+            $setting = static::find($key);
+
+            return $setting
+                ? ['value' => $setting->value, 'type' => $setting->type]
+                : null;
         });
 
-        if (! $setting) {
+        if ($cached === null) {
             return $default;
         }
 
-        return match($setting->type) {
-            'boolean' => (bool) $setting->value,
-            'json'    => json_decode($setting->value, true),
-            default   => $setting->value,
+        return match($cached['type']) {
+            'boolean' => (bool) $cached['value'],
+            'json'    => json_decode($cached['value'], true),
+            default   => $cached['value'],
         };
     }
 

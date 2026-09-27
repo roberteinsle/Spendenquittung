@@ -87,11 +87,13 @@ class SpendesTable
             ])
             ->recordActions([
                 BescheinigungActions::pdfOeffnen(),
+                BescheinigungActions::perEmailSenden(),
                 BescheinigungActions::pdfErzeugen(),
                 EditAction::make(),
             ])
             ->toolbarActions([
                 BescheinigungActions::pdfsErzeugenBulk(),
+                BescheinigungActions::perEmailSendenBulk(),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
