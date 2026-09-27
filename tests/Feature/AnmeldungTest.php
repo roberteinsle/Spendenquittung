@@ -41,6 +41,26 @@ class AnmeldungTest extends TestCase
             ->assertSee('Chris Beispiel');
     }
 
+    public function test_anmeldeseite_traegt_den_namen_der_app_nicht_laravel(): void
+    {
+        $this->ohnePin();
+
+        $this->get('/admin/login')
+            ->assertOk()
+            ->assertSee('Spendenquittung')
+            ->assertDontSee('Laravel');
+    }
+
+    public function test_ohne_benutzer_erklaert_die_seite_was_zu_tun_ist(): void
+    {
+        $this->assertSame(0, User::count());
+
+        $this->get('/admin/login')
+            ->assertOk()
+            ->assertSee('Es ist noch kein Benutzer angelegt.')
+            ->assertSee('db:seed --force', escape: false);
+    }
+
     public function test_klick_auf_namen_meldet_ohne_pin_an(): void
     {
         $benutzer = $this->ohnePin();

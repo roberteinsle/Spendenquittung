@@ -43,6 +43,7 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       APP_ENV: production
+      APP_NAME: ${APP_NAME:-Spendenquittung}
       APP_KEY: ${APP_KEY}
       APP_URL: ${APP_URL}
       APP_DEBUG: "false"
@@ -82,6 +83,7 @@ services:
     command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=120", "--sleep=3"]
     environment:
       APP_ENV: production
+      APP_NAME: ${APP_NAME:-Spendenquittung}
       APP_KEY: ${APP_KEY}
       APP_URL: ${APP_URL}
       APP_DEBUG: "false"

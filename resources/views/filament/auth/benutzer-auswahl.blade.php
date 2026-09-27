@@ -53,10 +53,17 @@
                     @endif
                 </button>
             @empty
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Es ist kein Benutzer angelegt. Bitte die Seeder ausführen:
-                    <code>php artisan db:seed --force</code>
-                </p>
+                <div class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                    <p>Es ist noch kein Benutzer angelegt.</p>
+
+                    <p>Im Docker-Betrieb auf dem Server:</p>
+                    <pre class="overflow-x-auto rounded-lg bg-gray-50 p-3 text-xs dark:bg-white/5"><code>docker compose exec app php artisan db:seed --force</code></pre>
+
+                    <p>
+                        Damit das bei jedem Start von allein passiert,
+                        <code>AUTORUN_LARAVEL_MIGRATION_SEED=true</code> setzen.
+                    </p>
+                </div>
             @endforelse
         </div>
     @endif
