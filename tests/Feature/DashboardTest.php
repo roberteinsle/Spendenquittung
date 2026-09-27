@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AnkreuzfeldTyp;
 use App\Filament\Widgets\LetzteBescheinigungen;
 use App\Filament\Widgets\LetzteSpender;
+use App\Filament\Widgets\Spitzenwerte;
 use App\Models\Foerderungszweck;
 use App\Models\Spende;
 use App\Models\Spender;
@@ -98,6 +99,7 @@ class DashboardTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('filament.admin.pages.dashboard'))
             ->assertOk()
+            ->assertSeeLivewire(Spitzenwerte::class)
             ->assertSeeLivewire(LetzteBescheinigungen::class)
             ->assertSeeLivewire(LetzteSpender::class)
             ->assertDontSeeLivewire(FilamentInfoWidget::class)

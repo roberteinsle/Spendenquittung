@@ -18,6 +18,7 @@ Entwickelt für die **Dietrich F. Liedelt Stiftung**, aber frei für andere Stif
 - **Mehrere Förderungszwecke** – konfigurierbar mit vollem juristischen Text je Zweck
 - **SMTP im Browser konfigurierbar** – inklusive Testmail-Knopf, Passwort verschlüsselt gespeichert
 - **E-Mail-Versand** – Bescheinigung als PDF-Anhang, mit passender Anrede (Sie oder Du) und frei konfigurierbarem Text
+- **Dashboard** – letzte Bescheinigungen und Spender, dazu höchste Einzelspende und treuester Spender
 - **Export** – Spender- und Bescheinigungslisten als Excel, Markdown oder XML, jeweils passend zu Filter, Suche oder Auswahl
 - **Versandprotokoll** – jeder Zugriff auf ein PDF und jeder E-Mail-Versand wird mit Benutzer, Zeitpunkt und Ergebnis protokolliert
 
