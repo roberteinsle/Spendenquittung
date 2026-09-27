@@ -1,63 +1,72 @@
+{{--
+    Layout über Inline-Styles statt Tailwind-Klassen: das Panel lädt nur
+    Filaments fertig kompiliertes CSS, das keine Utility-Klassen wie "flex" oder
+    "w-full" enthält. Alles Sichtbare kommt deshalb aus Filament-Komponenten.
+--}}
 <x-filament-panels::page.simple>
     @php
         $gewaehlt = $this->getGewaehlterBenutzer();
     @endphp
 
     @if ($gewaehlt)
-        <form wire:submit="anmelden" class="space-y-6">
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                Angemeldet als <span class="font-medium text-gray-950 dark:text-white">{{ $gewaehlt->name }}</span>
-            </p>
-
-            <x-filament::input.wrapper :valid="! $errors->has('pin')">
+        <form wire:submit="anmelden" style="display: grid; gap: 1.5rem;">
+            <x-filament::input.wrapper
+                :valid="! $errors->has('pin')"
+                prefix-icon="heroicon-m-lock-closed"
+            >
                 <x-filament::input
                     type="password"
                     wire:model="pin"
                     inputmode="numeric"
                     autocomplete="off"
                     autofocus
-                    placeholder="PIN"
+                    :placeholder="'PIN für ' . $gewaehlt->name"
                 />
             </x-filament::input.wrapper>
 
             @error('pin')
-                <p class="text-sm text-danger-600 dark:text-danger-400">{{ $message }}</p>
+                <p style="margin-top: -1rem; font-size: 0.875rem; color: rgb(var(--danger-600, 220 38 38));">
+                    {{ $message }}
+                </p>
             @enderror
 
-            <div class="flex gap-3">
-                <x-filament::button type="submit" class="flex-1">
+            <div style="display: grid; gap: 0.75rem;">
+                <x-filament::button type="submit" size="lg" style="width: 100%;">
                     Anmelden
                 </x-filament::button>
 
-                <x-filament::button type="button" color="gray" wire:click="zurueck">
+                <x-filament::button
+                    type="button"
+                    color="gray"
+                    wire:click="zurueck"
+                    icon="heroicon-m-arrow-left"
+                    style="width: 100%;"
+                >
                     Zurück
                 </x-filament::button>
             </div>
         </form>
     @else
-        <div class="space-y-3">
+        <div style="display: grid; gap: 0.75rem;">
             @forelse ($this->getBenutzer() as $benutzer)
-                <button
-                    type="button"
+                <x-filament::button
+                    tag="button"
                     wire:click="waehle({{ $benutzer->id }})"
                     wire:loading.attr="disabled"
-                    class="flex w-full items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left transition hover:border-primary-500 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 dark:border-white/10 dark:bg-white/5 dark:hover:border-primary-500 dark:hover:bg-primary-500/10"
+                    color="gray"
+                    size="lg"
+                    :icon="$benutzer->brauchtPin() ? 'heroicon-m-lock-closed' : 'heroicon-m-user'"
+                    style="width: 100%;"
                 >
-                    <span class="font-medium text-gray-950 dark:text-white">{{ $benutzer->name }}</span>
-
-                    @if ($benutzer->brauchtPin())
-                        <x-filament::icon
-                            icon="heroicon-m-lock-closed"
-                            class="h-5 w-5 text-gray-400 dark:text-gray-500"
-                        />
-                    @endif
-                </button>
+                    {{ $benutzer->name }}
+                </x-filament::button>
             @empty
-                <div class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                <div style="display: grid; gap: 0.75rem; font-size: 0.875rem;">
                     <p>Es ist noch kein Benutzer angelegt.</p>
 
                     <p>Im Docker-Betrieb auf dem Server:</p>
-                    <pre class="overflow-x-auto rounded-lg bg-gray-50 p-3 text-xs dark:bg-white/5"><code>docker compose exec app php artisan db:seed --force</code></pre>
+
+                    <pre style="overflow-x: auto; font-size: 0.75rem;"><code>docker compose exec app php artisan db:seed --force</code></pre>
 
                     <p>
                         Damit das bei jedem Start von allein passiert,
