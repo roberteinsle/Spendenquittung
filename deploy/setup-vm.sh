@@ -8,11 +8,11 @@ set -euo pipefail
 TAILSCALE_DOMAIN="spendenquittung.tail068ba8.ts.net"
 APP_DIR="/opt/spendenquittung"
 
-echo "=== 1/5 System aktualisieren ==="
+echo "=== 1/6 System aktualisieren ==="
 apt-get update -q
 apt-get upgrade -y -q
 
-echo "=== 2/5 Docker installieren ==="
+echo "=== 2/6 Docker installieren ==="
 apt-get install -y -q ca-certificates curl
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -24,7 +24,7 @@ apt-get update -q
 apt-get install -y -q docker-ce docker-ce-cli containerd.io docker-compose-plugin
 systemctl enable --now docker
 
-echo "=== 3/5 Tailscale HTTPS-Zertifikat ausstellen ==="
+echo "=== 3/6 Tailscale HTTPS-Zertifikat ausstellen ==="
 # Tailscale muss bereits eingeloggt sein (tailscale up --authkey=...)
 tailscale cert "$TAILSCALE_DOMAIN"
 mkdir -p /etc/ssl/tailscale
@@ -32,7 +32,7 @@ cp "/var/lib/tailscale/certs/${TAILSCALE_DOMAIN}.crt" /etc/ssl/tailscale/cert.pe
 cp "/var/lib/tailscale/certs/${TAILSCALE_DOMAIN}.key" /etc/ssl/tailscale/key.pem
 chmod 640 /etc/ssl/tailscale/key.pem
 
-echo "=== 4/5 App-Verzeichnis anlegen ==="
+echo "=== 4/6 App-Verzeichnis anlegen ==="
 mkdir -p "$APP_DIR"
 cat > "$APP_DIR/docker-compose.yml" <<'COMPOSE'
 services:
@@ -133,7 +133,24 @@ volumes:
   db-data:
 COMPOSE
 
-echo "=== 5/5 Nginx als TLS-Terminator installieren ==="
+echo "=== 5/6 Deploy-Befehl in die Shell legen ==="
+# Idempotent: bei wiederholtem Lauf nicht doppelt anhaengen.
+if ! grep -q "spendenquittung-deploy" /root/.bashrc 2>/dev/null; then
+cat >> /root/.bashrc <<'BASHRC'
+
+# spendenquittung-deploy
+deploy() (
+    set -e
+    cd /opt/spendenquittung
+    docker compose --env-file .env pull
+    docker compose --env-file .env up -d
+    docker image prune -f >/dev/null
+    docker compose ps --format 'table {{.Service}}\t{{.Status}}'
+)
+BASHRC
+fi
+
+echo "=== 6/6 Nginx als TLS-Terminator installieren ==="
 apt-get install -y -q nginx
 
 cat > /etc/nginx/sites-available/spendenquittung <<NGINX
@@ -191,6 +208,9 @@ echo "  MAIL_PASSWORD=..."
 echo ""
 echo "Dann starten mit:"
 echo "  cd /opt/spendenquittung && docker compose --env-file .env up -d"
+echo ""
+echo "Danach genuegt zum Neudeployen in jeder SSH-Sitzung:"
+echo "  deploy"
 echo ""
 echo "Beim ersten Start werden Migrationen UND Seeder ausgefuehrt. Danach sofort"
 echo "die Passwoerter der angelegten Konten aendern (admin@example.com/password):"

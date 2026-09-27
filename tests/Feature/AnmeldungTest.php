@@ -25,7 +25,7 @@ class AnmeldungTest extends TestCase
         return User::factory()->create(['name' => $name, 'login_pin' => null]);
     }
 
-    private function mitPin(string $pin = '1260', string $name = 'Chris Beispiel'): User
+    private function mitPin(string $pin = '135790', string $name = 'Chris Beispiel'): User
     {
         return User::factory()->create(['name' => $name, 'login_pin' => $pin]);
     }
@@ -64,11 +64,11 @@ class AnmeldungTest extends TestCase
 
     public function test_richtige_pin_meldet_an(): void
     {
-        $benutzer = $this->mitPin('1260');
+        $benutzer = $this->mitPin('135790');
 
         Livewire::test(BenutzerAuswahl::class)
             ->call('waehle', $benutzer->id)
-            ->set('pin', '1260')
+            ->set('pin', '135790')
             ->call('anmelden')
             ->assertHasNoErrors();
 
@@ -77,7 +77,7 @@ class AnmeldungTest extends TestCase
 
     public function test_falsche_pin_meldet_nicht_an(): void
     {
-        $benutzer = $this->mitPin('1260');
+        $benutzer = $this->mitPin('135790');
 
         Livewire::test(BenutzerAuswahl::class)
             ->call('waehle', $benutzer->id)
@@ -90,7 +90,7 @@ class AnmeldungTest extends TestCase
 
     public function test_pin_versuche_werden_gedrosselt(): void
     {
-        $benutzer = $this->mitPin('1260');
+        $benutzer = $this->mitPin('135790');
 
         $seite = Livewire::test(BenutzerAuswahl::class)
             ->call('waehle', $benutzer->id);
@@ -100,14 +100,14 @@ class AnmeldungTest extends TestCase
         }
 
         // Even the correct PIN must be refused once the limit is reached.
-        $seite->set('pin', '1260')->call('anmelden')->assertHasErrors('pin');
+        $seite->set('pin', '135790')->call('anmelden')->assertHasErrors('pin');
 
         $this->assertGuest();
     }
 
     public function test_pin_kann_nicht_ueber_den_namen_umgangen_werden(): void
     {
-        $benutzer = $this->mitPin('1260');
+        $benutzer = $this->mitPin('135790');
 
         // Calling the sign-in step without ever passing the PIN check.
         Livewire::test(BenutzerAuswahl::class)

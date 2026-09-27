@@ -116,6 +116,36 @@ Beim ersten Start werden Migrationen und Seeder automatisch ausgeführt, sofern 
 
 ---
 
+## Neu deployen
+
+Nach einem Push auf `main` baut die GitHub Action ein neues Image. Auf dem Server genügt dann ein Befehl:
+
+```bash
+deploy
+```
+
+Die Funktion legt [deploy/setup-vm.sh](deploy/setup-vm.sh) in `~/.bashrc` an. Auf einem bereits eingerichteten Server einmalig nachtragen:
+
+```bash
+cat >> ~/.bashrc <<'BASHRC'
+
+# spendenquittung-deploy
+deploy() (
+    set -e
+    cd /opt/spendenquittung
+    docker compose --env-file .env pull
+    docker compose --env-file .env up -d
+    docker image prune -f >/dev/null
+    docker compose ps --format 'table {{.Service}}\t{{.Status}}'
+)
+BASHRC
+source ~/.bashrc
+```
+
+Sie läuft in einer Subshell, wechselt das Arbeitsverzeichnis also nicht dauerhaft, bricht beim ersten Fehler ab und räumt alte Images weg – sonst läuft die Platte einer kleinen VM mit der Zeit voll.
+
+---
+
 ## Anpassung an die eigene Organisation
 
 ### Stiftungs-/Vereinsdaten
@@ -182,6 +212,7 @@ Die Vorlage liegt unter [resources/views/pdf/zuwendungsbestaetigung.blade.php](r
 - Die mitgelieferte `TailscaleOnly`-Middleware blockiert alle Anfragen von außerhalb des Tailscale-Netzwerks, wenn `TAILSCALE_ONLY=true` gesetzt ist. Sie ist sowohl im `web`-Stack als auch im Filament-Panel registriert.
 - Jeder angelegte Benutzer hat vollen Zugriff auf das Panel – es gibt keine Selbstregistrierung, Konten legt ausschließlich ein Administrator an.
 - Credentials gehören **niemals ins Repository** – ausschließlich über Umgebungsvariablen konfigurieren.
+- Das gilt auch für **Anmelde-PINs, und auch als Testwert**. PINs werden gehasht in der Datenbank abgelegt und ausschließlich über die Oberfläche vergeben.
 - Regelmäßige Backups der Datenbank und des Storage-Volumes sind Pflicht.
 
 ---
