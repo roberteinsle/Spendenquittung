@@ -201,6 +201,19 @@ Die App ist für den Betrieb in einem privaten Netz gedacht und hat deshalb kein
 
 Benutzer werden unter **Einstellungen → Benutzer** angelegt und bearbeitet. Das PIN-Feld bleibt beim Bearbeiten leer; leer speichern behält die bestehende PIN.
 
+#### Rechte
+
+Es gibt genau zwei Stufen. Der Haken **„Darf Einstellungen und Benutzer verwalten"** entscheidet:
+
+| | ohne Haken | mit Haken |
+|---|---|---|
+| Spender, Bescheinigungen, Förderungszwecke, Import | ja | ja |
+| Einstellungen, Benutzerverwaltung | nein | ja |
+
+Ohne den Haken sind die beiden Punkte nicht nur ausgeblendet, sondern auch über die direkte URL gesperrt. Die eigenen Rechte lassen sich nicht entziehen – sonst könnte sich der letzte Administrator aussperren, ohne Weg zurück über die Oberfläche.
+
+> Beim Update auf diese Version erhalten **alle bestehenden Konten** den Haken, damit niemand ausgesperrt wird. Bei Mitarbeiterkonten also anschließend entfernen.
+
 > Diese Bequemlichkeit hat einen Preis: Wer Zugang zum Netz hat, kann sich als beliebiger Mitarbeiter ohne PIN anmelden. Damit ist die Zuordnung im Versandprotokoll („wer hat die Bescheinigung verschickt") nur so verlässlich wie der Netzzugang. Wer das nicht möchte, vergibt für jedes Konto eine PIN.
 
 ### Förderungszwecke

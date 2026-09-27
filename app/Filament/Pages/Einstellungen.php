@@ -34,6 +34,14 @@ class Einstellungen extends Page implements HasForms
 
     public ?array $data = [];
 
+    /**
+     * Gilt für die Navigation und für den direkten Aufruf der Route.
+     */
+    public static function canAccess(): bool
+    {
+        return (bool) auth()->user()?->istAdmin();
+    }
+
     public function mount(): void
     {
         $keys = [

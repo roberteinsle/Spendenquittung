@@ -29,6 +29,7 @@ class UserSeeder extends Seeder
             // nullable. Setting a PIN happens in the panel.
             'password'  => Str::random(64),
             'login_pin' => null,
+            'ist_admin' => true,
         ]);
     }
 }

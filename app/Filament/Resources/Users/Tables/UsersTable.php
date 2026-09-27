@@ -30,6 +30,11 @@ class UsersTable
                     ->label('PIN')
                     ->boolean()
                     ->alignCenter(),
+
+                IconColumn::make('ist_admin')
+                    ->label('Verwaltung')
+                    ->boolean()
+                    ->alignCenter(),
             ])
             ->defaultSort('name')
             ->recordActions([

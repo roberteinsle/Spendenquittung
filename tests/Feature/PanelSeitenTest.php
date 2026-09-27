@@ -22,6 +22,14 @@ class PanelSeitenTest extends TestCase
 
     private Spende $spende;
 
+    /**
+     * Die Smoke-Tests decken auch Einstellungen und Benutzerverwaltung ab.
+     */
+    private function verwalter(): User
+    {
+        return User::factory()->create(['ist_admin' => true]);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -75,7 +83,7 @@ class PanelSeitenTest extends TestCase
     #[DataProvider('listenUndFormulare')]
     public function test_seite_rendert(string $route): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs($this->verwalter())
             ->get(route($route))
             ->assertOk();
     }
@@ -87,21 +95,21 @@ class PanelSeitenTest extends TestCase
 
     public function test_bescheinigung_bearbeiten_mit_versandprotokoll_rendert(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs($this->verwalter())
             ->get(route('filament.admin.resources.spendes.edit', $this->spende))
             ->assertOk();
     }
 
     public function test_spender_bearbeiten_rendert(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs($this->verwalter())
             ->get(route('filament.admin.resources.spenders.edit', $this->spende->spender))
             ->assertOk();
     }
 
     public function test_foerderungszweck_bearbeiten_rendert(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs($this->verwalter())
             ->get(route('filament.admin.resources.foerderungszwecks.edit', $this->spende->foerderungszweck))
             ->assertOk();
     }

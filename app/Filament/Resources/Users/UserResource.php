@@ -30,6 +30,15 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
+    /**
+     * Wer Konten anlegen kann, kann sich selbst Rechte geben – das gehört
+     * deshalb hinter dieselbe Schranke wie die Einstellungen.
+     */
+    public static function canAccess(): bool
+    {
+        return (bool) auth()->user()?->istAdmin();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);

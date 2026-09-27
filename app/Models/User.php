@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 
-#[Fillable(['name', 'email', 'password', 'login_pin'])]
+#[Fillable(['name', 'email', 'password', 'login_pin', 'ist_admin'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -41,7 +41,17 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'login_pin' => 'hashed',
+            'ist_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Administrators may manage settings and user accounts. Everyone else only
+     * works with donors and receipts.
+     */
+    public function istAdmin(): bool
+    {
+        return (bool) $this->ist_admin;
     }
 
     /**
